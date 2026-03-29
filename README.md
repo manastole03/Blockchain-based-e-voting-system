@@ -162,6 +162,7 @@ hyperledger-evoting-advanced-starter/
     ├── index.js
     └── lib/
         └── election-contract.js
+└── frontend/
 ```
 ---
 
