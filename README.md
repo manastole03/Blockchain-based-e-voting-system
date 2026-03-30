@@ -1,6 +1,6 @@
 # Hyperledger-Based Blockchain E-Voting System
 
-A secure, transparent, and auditable e-voting platform built on **Hyperledger Fabric**.  
+A secure, transparent, and auditable e-voting platform built on **Hyperledger Fabric Technology**.  
 This project extends our earlier research work on blockchain-based voting by moving from a high-level conceptual framework to a more structured smart-contract-driven architecture with stronger election control, vote integrity, auditability, and deployment readiness.
 
 ---
