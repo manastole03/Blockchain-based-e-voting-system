@@ -1,0 +1,80 @@
+(node:21260) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Expectation Violation: Duplicate atom key "authState". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:10:63)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\index.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/index.tsx:12:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)
+Expectation Violation: Duplicate atom key "waleltState". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:21:65)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\index.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/index.tsx:12:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)
+Expectation Violation: Duplicate atom key "candidateWallets". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:28:75)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\index.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/index.tsx:12:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)
+Expectation Violation: Duplicate atom key "authState". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:10:63)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\dashboard.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/dashboard.tsx:14:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)
+Expectation Violation: Duplicate atom key "waleltState". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:21:65)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\dashboard.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/dashboard.tsx:14:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)
+Expectation Violation: Duplicate atom key "candidateWallets". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:671:19)
+    at checkForDuplicateAtomKey (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:752:9)
+    at registerNode (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:763:5)
+    at baseAtom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8347:16)
+    at atom (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\node_modules\recoil\cjs\index.js:8399:12)
+    at eval (webpack-internal:///./atoms/index.ts:28:75)
+    at ./atoms/index.ts (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\pages\dashboard.js:22:1)
+    at __webpack_require__ (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///./pages/dashboard.tsx:14:64)
+    at __webpack_require__.a (C:\Users\manas\Downloads\voting-voter-ui-main\voting-voter-ui-main\.next\server\webpack-runtime.js:97:13)

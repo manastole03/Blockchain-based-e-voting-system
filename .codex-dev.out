@@ -1,0 +1,14 @@
+
+> voter-ui@0.1.0 dev
+> next dev
+
+ready - started server on 0.0.0.0:3000, url: http://localhost:3000
+event - compiled client and server successfully in 898 ms (162 modules)
+wait  - compiling /dashboard (client and server)...
+event - compiled client and server successfully in 2s (194 modules)
+wait  - compiling /_error (client and server)...
+event - compiled client and server successfully in 201 ms (195 modules)
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 258 ms (200 modules)
+wait  - compiling /elections/[id] (client and server)...
+event - compiled client and server successfully in 304 ms (209 modules)
