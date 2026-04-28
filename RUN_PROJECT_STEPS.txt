@@ -1,0 +1,195 @@
+Blockchain-Based E-Voting System - Run Steps
+Created on: 2026-04-27
+
+Project root:
+  /Users/manastole/Blockchain-based-e-voting-system
+
+Verified running URLs:
+  Frontend: http://localhost:3000
+  Backend API: http://localhost:4000/api
+  Backend health check: http://localhost:4000/api/health
+
+Important note about this machine:
+  The local shell did not have node/npm installed, so I ran the project with Docker.
+  package-lock.json has been synchronized with package.json, so npm ci now works.
+
+Persistence note:
+  The voter-facing app now stores elections, candidates, wallets, votes, voter-election status,
+  and vote verification records in PostgreSQL app_* tables.
+  Keep NEXT_PUBLIC_AUTH_BYPASS=false in production so all browsers use the real API and database.
+  Each persisted vote is also written into an append-only app_vote_blocks proof-of-work ledger.
+
+Prerequisites:
+  1. Docker Desktop or Docker Engine with Docker Compose.
+  2. For local non-Docker frontend/backend runs, install Node.js 20 or newer and npm.
+
+Option A - Run with Docker, verified on this machine
+
+1. Open a terminal in the project folder:
+     cd /Users/manastole/Blockchain-based-e-voting-system
+
+2. Start PostgreSQL and the backend API:
+     docker compose up --build -d backend
+
+   This starts:
+     evoting-blockchain-postgres on port 5432
+     evoting-blockchain-backend on port 4000
+
+3. Verify the backend:
+     curl http://localhost:4000/api/health
+     curl http://localhost:4000/api/blockchain/validate
+
+   Expected result:
+     health returns success true and status ok.
+     blockchain validation returns success true, valid true, and no errors.
+
+4. Start the Next.js frontend in a Node Docker container:
+     docker stop evoting-next-frontend 2>/dev/null || true
+     docker rm evoting-next-frontend 2>/dev/null || true
+     docker run -d --name evoting-next-frontend \
+       --network blockchain-based-e-voting-system_default \
+       -p 3000:3000 \
+       -e DATABASE_URL="postgres://evoting:evoting_password@postgres:5432/evoting" \
+       -e NEXT_PUBLIC_AUTH_BYPASS=false \
+       -e APP_VOTE_POW_DIFFICULTY=2 \
+       -e JWT_SECRET="change-this-long-random-jwt-secret-before-production" \
+       -e CHAIN_SECRET="change-this-long-random-vote-signing-secret-before-production" \
+       -v "$PWD":/app \
+       -v evoting_next_node_modules:/app/node_modules \
+       -w /app \
+       node:20-alpine \
+       sh -lc "npm ci && npm run dev -- --hostname 0.0.0.0"
+
+5. Watch the frontend logs until Next.js says it is ready:
+     docker logs -f evoting-next-frontend
+
+   Expected line:
+     ready - started server on 0.0.0.0:3000, url: http://localhost:3000
+
+6. Open the app in a browser:
+     http://localhost:3000
+
+7. Demo voter login:
+     Email: voter@demo.com
+     Password: password123
+
+8. Optional API login check:
+     curl -X POST http://localhost:3000/api/voter/login \
+       -H "Content-Type: application/json" \
+       -d '{"email":"voter@demo.com","password":"password123"}'
+
+9. Optional backend chain check:
+     curl http://localhost:4000/api/blockchain
+
+10. Optional dynamic database checks:
+      Log in through the API:
+        curl -X POST http://localhost:3000/api/voter/login \
+          -H "Content-Type: application/json" \
+          -d '{"email":"voter@demo.com","password":"password123"}'
+
+      Cast a vote from the UI or API, then open the live scoreboard:
+        http://localhost:3000/candidates
+
+      The scoreboard reads persisted vote rows from PostgreSQL, so votes from different PCs
+      will show together when those PCs use the same deployed server and database.
+
+      Validate the vote blockchain ledger:
+        curl "http://localhost:3000/api/blockchain-ledger?limit=5"
+
+11. Run the automated tests:
+      docker exec evoting-next-frontend npm test
+
+    Verified result on 2026-04-27:
+      4 test files passed.
+      7 tests passed.
+
+12. Stop the project when finished:
+      docker stop evoting-next-frontend
+      docker rm evoting-next-frontend
+      docker compose down
+
+    To also delete PostgreSQL data, use this instead of docker compose down:
+      docker compose down -v
+
+Option B - Run locally with Node.js/npm
+
+1. Open a terminal in the project folder:
+     cd /Users/manastole/Blockchain-based-e-voting-system
+
+2. Create a local environment file:
+     cp .env.example .env
+
+3. Install dependencies:
+     npm install
+
+   npm ci can also be used for clean installs.
+
+4. Start PostgreSQL:
+     docker compose up -d postgres
+
+5. Apply the database schema:
+     npm run db:migrate
+
+6. Start the backend API in terminal 1:
+     npm run backend:dev
+
+7. Start the frontend in terminal 2:
+     export NEXT_PUBLIC_AUTH_BYPASS=false
+     npm run dev
+
+8. Open the app:
+     http://localhost:3000
+
+9. Backend API URL:
+     http://localhost:4000/api
+
+10. Demo voter login:
+      Email: voter@demo.com
+      Password: password123
+
+11. Run tests:
+      npm test
+
+AWS deployment notes:
+  1. Use one shared PostgreSQL database, for example Amazon RDS PostgreSQL.
+  2. Set DATABASE_URL on the deployed Next.js app and backend API to that same database.
+  3. Set NEXT_PUBLIC_AUTH_BYPASS=false before building/deploying the Next.js app.
+  4. Run the schema migration once against the AWS database before accepting traffic.
+  5. Do not run multiple separate local/in-memory app instances for voting; all app instances
+     must point to the same DATABASE_URL.
+  6. Set JWT_SECRET and CHAIN_SECRET to long random production secrets.
+  7. Set APP_VOTE_POW_DIFFICULTY to a value your server can handle; 2 is fast for demo use.
+
+Useful commands:
+  Check running containers:
+    docker ps --filter name=evoting
+
+  Check backend logs:
+    docker logs evoting-blockchain-backend
+
+  Check frontend logs:
+    docker logs evoting-next-frontend
+
+  Rebuild backend after backend code changes:
+    docker compose up --build -d backend
+
+  Restart frontend after frontend code changes:
+    docker restart evoting-next-frontend
+
+What was verified:
+  1. Backend Docker image built successfully.
+  2. PostgreSQL container is healthy.
+  3. Backend API started on port 4000.
+  4. GET /api/health returned success true.
+  5. GET /api/blockchain/validate returned valid true.
+  6. Frontend Next.js dev server started on port 3000.
+  7. Frontend page returned HTTP 200.
+  8. Login API accepted voter@demo.com / password123.
+  9. A vote cast through the Next.js API persisted in PostgreSQL.
+  10. Duplicate voting in the same election was rejected.
+  11. Vote verification found the saved transaction key.
+  12. The live results endpoint returned the persisted vote count.
+  13. The app vote blockchain ledger returned valid true.
+  14. Production build passed.
+  15. npm ci passed after syncing package-lock.json.
+  16. Automated tests passed: 4 files, 7 tests.

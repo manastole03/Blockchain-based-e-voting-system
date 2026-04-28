@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: evoting-blockchain-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      API_PREFIX: /api
+      DATABASE_URL: postgres://evoting:evoting_password@postgres:5432/evoting
+      CORS_ORIGIN: "*"
+      LOG_LEVEL: info
+      CONSENSUS_ALGORITHM: pow
+      POW_DIFFICULTY: 3
+      MINING_REWARD: 10
+      MAX_TRANSACTIONS_PER_BLOCK: 100
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 120
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: evoting-blockchain-postgres
+    environment:
+      POSTGRES_USER: evoting
+      POSTGRES_PASSWORD: evoting_password
+      POSTGRES_DB: evoting
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evoting -d evoting"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+

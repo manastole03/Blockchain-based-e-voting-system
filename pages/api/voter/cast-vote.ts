@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
-import { db } from "../../../lib/db";
 import { verifyToken } from "../../../lib/auth";
 import {
   generateTransactionKey,
   generateSignature,
 } from "../../../lib/crypto";
+import { electionDb } from "../../../lib/electionDb";
 
 type ApiResponse =
   | {
@@ -15,6 +15,11 @@ type ApiResponse =
       message: string;
       transactionKey: string;
       signature: string;
+      TransactionKey: string;
+      SignatureGenerated: string;
+      transactionHash: string;
+      blockHash: string;
+      blockHeight: number;
     };
 
 type DecodedToken = {
@@ -84,48 +89,8 @@ export default async function handler(
      * Step 5: Ensure the voter has not already voted in this election.
      * One voter can cast only one vote per election.
      */
-    const existingVote = db.votes.find(
-      (vote) => vote.voterId === voterId && vote.electionId === electionId
-    );
-
-    if (existingVote) {
-      return res.status(409).json({
-        message: "You have already voted in this election.",
-      });
-    }
-
     /**
-     * Step 6: Check whether the voter has an available voting token.
-     * A token is required to cast a vote.
-     */
-    const voterWallet = db.wallets.find((wallet) => wallet.voterId === voterId);
-
-    if (!voterWallet || voterWallet.tokens <= 0) {
-      return res.status(403).json({
-        message: "No vote tokens available.",
-      });
-    }
-
-    /**
-     * Step 7: Validate that the candidate exists,
-     * belongs to the requested election,
-     * and is currently active.
-     */
-    const candidate = db.candidates.find(
-      (item) =>
-        item.id === candidateId &&
-        item.electionId === electionId &&
-        item.active === true
-    );
-
-    if (!candidate) {
-      return res.status(404).json({
-        message: "Candidate not found or not active in this election.",
-      });
-    }
-
-    /**
-     * Step 8: Generate blockchain-style transaction metadata.
+     * Step 5: Generate blockchain-style transaction metadata.
      * - transactionKey: unique key for this vote transaction
      * - signature: cryptographic signature tied to voter identity
      */
@@ -137,63 +102,43 @@ export default async function handler(
 
     const signature = generateSignature(transactionKey, voterId);
 
-    /**
-     * Step 9: Create a cryptographic commitment.
-     * This adds another verifiable layer to the vote record.
-     */
     const commitment = crypto
       .createHash("sha256")
       .update(`${candidateId}:${voterId}:${Date.now()}`)
       .digest("hex");
 
     /**
-     * Step 10: Store the vote in the database.
+     * Step 6: Persist the vote atomically in PostgreSQL.
      */
-    const newVote = {
-      id: `vote-${db.votes.length + 1}`,
+    const vote = await electionDb.castVote({
       voterId,
       electionId,
       candidateId,
       transactionKey,
       signature,
       commitment,
-      timestamp: new Date().toISOString(),
-    };
-
-    db.votes.push(newVote);
+    });
 
     /**
-     * Step 11: Deduct one token from the voter's wallet.
-     */
-    voterWallet.tokens -= 1;
-
-    /**
-     * Step 12: Increment the selected candidate's vote count.
-     */
-    candidate.voteCount = (candidate.voteCount || 0) + 1;
-
-    /**
-     * Step 13: Mark voter-election status as complete,
-     * if a matching voter-election record exists.
-     */
-    const voterElection = db.voterElections.find(
-      (record) =>
-        record.voterId === voterId && record.electionId === electionId
-    );
-
-    if (voterElection) {
-      voterElection.status = "complete";
-    }
-
-    /**
-     * Step 14: Return success response.
+     * Step 7: Return success response.
      */
     return res.status(200).json({
       message: "Vote cast successfully.",
-      transactionKey,
-      signature,
+      transactionKey: vote.transactionKey,
+      signature: vote.signature,
+      TransactionKey: vote.transactionKey,
+      SignatureGenerated: vote.signature,
+      transactionHash: vote.transactionHash,
+      blockHash: vote.blockHash,
+      blockHeight: vote.blockHeight,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+      });
+    }
+
     console.error("Error while casting vote:", error);
 
     return res.status(500).json({

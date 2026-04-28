@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CandidateWalletsState } from "../atoms";
 import { useRecoilState } from "recoil";
 import { GetCandidateWallets } from "../libs/API";
@@ -19,7 +19,7 @@ const ResultsPage = () => {
   const [wallets, setWallets] = useRecoilState(CandidateWalletsState);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const getWallet = async (showLoader = false) => {
+  const getWallet = useCallback(async (showLoader = false) => {
     try {
       if (showLoader) setLoading(true);
       const data = await GetCandidateWallets();
@@ -35,13 +35,13 @@ const ResultsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setWallets]);
 
   useEffect(() => {
     getWallet(true);
     const interval = setInterval(() => getWallet(false), 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [getWallet]);
 
   // Sort by vote count descending
   const sorted: CandidateResult[] = [...(wallets?.candidates || [])].sort(

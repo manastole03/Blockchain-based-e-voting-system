@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "../../../lib/db";
 import { verifyToken } from "../../../lib/auth";
+import { electionDb } from "../../../lib/electionDb";
 
 type CandidateResponse = {
   id: string;
@@ -82,7 +82,7 @@ export default async function handler(
     /**
      * Step 5: Check whether the election exists.
      */
-    const election = db.elections.find((item) => item._id === electionId);
+    const election = await electionDb.findElectionById(electionId);
 
     if (!election) {
       return res.status(404).json({
@@ -94,10 +94,7 @@ export default async function handler(
      * Step 6: Fetch all active candidates
      * that belong to the specified election.
      */
-    const candidates = db.candidates.filter(
-      (candidate) =>
-        candidate.electionId === electionId && candidate.active === true
-    );
+    const candidates = await electionDb.getActiveCandidatesByElection(electionId);
 
     /**
      * Step 7: Transform candidate records into

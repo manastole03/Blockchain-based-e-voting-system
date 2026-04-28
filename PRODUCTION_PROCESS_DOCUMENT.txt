@@ -1,0 +1,240 @@
+Blockchain-Based E-Voting System - Production Process
+Created on: 2026-04-28
+
+Goal
+  Make the project dynamic, database-backed, and deployable so votes cast from
+  different PCs are saved in one backend database and reflected in the live results.
+
+Current Production Shape
+  1. Frontend
+     Next.js pages render the voter login, dashboard, election candidate view,
+     live results scoreboard, and vote verification screen.
+
+  2. Voter API backend
+     Next.js API routes handle login, voter data, wallet data, candidate lookup,
+     vote casting, live results, vote verification, and vote ledger inspection.
+
+  3. Blockchain API backend
+     Express + TypeScript backend exposes blockchain APIs on port 4000.
+     It includes wallets, transactions, blocks, validators, nodes, consensus,
+     health checks, and PostgreSQL persistence.
+
+  4. Database
+     PostgreSQL stores both the blockchain backend tables and the voter app tables.
+     The voter app tables use the app_* prefix.
+
+Main Dynamic Database Tables
+  app_voters
+    Stores voter accounts and login details for the demo flow.
+
+  app_elections
+    Stores elections shown on the dashboard.
+
+  app_candidates
+    Stores candidates for each election.
+
+  app_wallets
+    Stores each voter's public key and remaining vote tokens.
+
+  app_voter_elections
+    Stores whether a voter has completed or not completed each election.
+
+  app_votes
+    Stores each cast vote, transaction key, signature, commitment, transaction hash,
+    and linked vote block hash.
+
+  app_vote_blocks
+    Stores the append-only vote blockchain ledger.
+
+Blockchain Concepts Used
+  Transaction key
+    Every vote receives a unique TX-* key. The voter can use this key later to verify
+    that the vote exists.
+
+  Signature
+    Every vote is signed with an HMAC signing secret. For a real public election,
+    replace this with client-side wallet signing using voter private keys.
+
+  Commitment hash
+    The vote stores a SHA-256 commitment so the vote record can be verified without
+    trusting plain UI state.
+
+  Transaction hash
+    A canonical vote payload is hashed with SHA-256. This is the vote's ledger
+    transaction hash.
+
+  Merkle root
+    Each vote block stores a Merkle root. Because this app creates one vote transaction
+    per vote block, the Merkle root is the transaction hash.
+
+  Previous block hash
+    Each vote block links to the previous vote block. This creates an append-only chain.
+
+  Proof of Work
+    Each vote block mines a nonce until the block hash satisfies APP_VOTE_POW_DIFFICULTY.
+    The default demo difficulty is 2.
+
+  Chain validation
+    /api/blockchain-ledger recalculates block hashes, Merkle roots, previous-hash links,
+    and proof-of-work difficulty. It returns valid true only when the chain is intact.
+
+Tech Used And Why
+  Next.js
+    Used for the frontend and simple server-side API routes in one deployable app.
+
+  React
+    Used for the dynamic voter dashboard, candidates page, wallet panel, results page,
+    and verification modal.
+
+  Recoil
+    Used for client-side auth, wallet, and results state.
+
+  TypeScript
+    Used across frontend and backend to catch import/type mistakes before deployment.
+
+  Express
+    Used for the separate blockchain backend API with modular services/controllers/routes.
+
+  PostgreSQL
+    Used as the shared durable database. This is what makes votes from different PCs
+    appear together on the scoreboard.
+
+  pg
+    Node PostgreSQL driver used by the Next.js API routes and Express backend.
+
+  crypto
+    Node built-in crypto module used for SHA-256 hashing, HMAC signatures, commitments,
+    transaction hashes, and proof-of-work block hashes.
+
+  Zod
+    Used by the Express backend for API request validation.
+
+  Pino
+    Used by the Express backend for structured logs.
+
+  Helmet, CORS, express-rate-limit
+    Used by the Express backend for baseline HTTP security and abuse protection.
+
+  Docker and Docker Compose
+    Used to run PostgreSQL and the backend consistently across machines.
+
+  Vitest and Supertest
+    Used for backend unit and integration tests.
+
+Production Environment Variables
+  DATABASE_URL
+    Shared PostgreSQL connection string. On AWS, use Amazon RDS PostgreSQL.
+
+  NEXT_PUBLIC_AUTH_BYPASS=false
+    Must be false in production. If true, the browser bypasses the real API.
+
+  JWT_SECRET
+    Long random secret used for login tokens.
+
+  CHAIN_SECRET
+    Long random secret used for vote signatures.
+
+  APP_VOTE_POW_DIFFICULTY
+    Proof-of-work difficulty for app vote blocks. Use 2 for demo; increase only if
+    the server can handle the extra mining work.
+
+  CONSENSUS_ALGORITHM
+    Express blockchain backend consensus algorithm: pow, pos, or pbft.
+
+AWS Deployment Process
+  1. Create an Amazon RDS PostgreSQL database.
+  2. Set DATABASE_URL to the RDS connection string for both the Next.js app and backend.
+  3. Set NEXT_PUBLIC_AUTH_BYPASS=false.
+  4. Set JWT_SECRET and CHAIN_SECRET to long random production values.
+  5. Run the database schema once:
+       npm run db:migrate
+  6. Build the project:
+       npm ci
+       npm run build
+       npm run backend:build
+  7. Start the backend API:
+       npm run backend:start
+  8. Start the Next.js app:
+       npm run start
+  9. Point all users to the same deployed app URL.
+  10. Confirm every deployed app instance uses the same DATABASE_URL.
+
+Important Production Rules
+  1. Do not use in-memory voting state in production.
+  2. Do not set NEXT_PUBLIC_AUTH_BYPASS=true in production.
+  3. Do not deploy multiple app instances with different databases.
+  4. Keep PostgreSQL backups enabled.
+  5. Use HTTPS in front of the app.
+  6. Rotate JWT_SECRET and CHAIN_SECRET if leaked.
+  7. For real elections, replace demo plaintext passwords with bcrypt hashes.
+  8. For real elections, replace HMAC demo signatures with voter wallet/private-key signatures.
+
+Simple Dry Run
+  1. Start the project.
+     Frontend opens at:
+       http://localhost:3000
+
+     Backend API opens at:
+       http://localhost:4000/api
+
+  2. Login as voter one.
+       email: voter@demo.com
+       password: password123
+
+  3. Open Student Council 2026.
+
+  4. Vote for Riya Verma.
+
+  5. The app creates:
+       app_votes row
+       app_wallets token decrement
+       app_voter_elections complete status
+       app_candidates vote count increment
+       app_vote_blocks mined proof-of-work block
+
+  6. Copy the transaction key.
+
+  7. Open Verify Vote and paste the transaction key.
+
+  8. The app returns:
+       valid true
+       candidate name
+       election name
+       transaction hash
+       block hash
+       block height
+       Merkle root
+       nonce
+       difficulty
+
+  9. Open Live Results.
+       http://localhost:3000/candidates
+
+  10. Login from another PC as another voter and cast a vote.
+      Because both PCs use the same deployed app and PostgreSQL database, the results page
+      shows all votes together.
+
+Verification Commands Used
+  TypeScript check:
+    docker exec evoting-next-frontend npx tsc --noEmit --pretty false
+
+  Tests:
+    docker exec evoting-next-frontend npm test
+
+  Clean install check:
+    docker run --rm -v "$PWD":/app -v evoting_ci_node_modules:/app/node_modules -w /app node:20-alpine npm ci --ignore-scripts
+
+  Production build:
+    docker exec evoting-next-frontend npm run build
+
+  Ledger validation:
+    curl "http://localhost:3000/api/blockchain-ledger?limit=5"
+
+Verified Result
+  1. TypeScript passed.
+  2. Tests passed: 4 files, 7 tests.
+  3. npm ci passed.
+  4. Production build passed.
+  5. Frontend returned HTTP 200.
+  6. Scoreboard returned persisted PostgreSQL vote totals.
+  7. Vote blockchain ledger returned valid true.

@@ -1,6 +1,7 @@
 import { AuthState } from "../atoms";
 
-export const AUTH_BYPASS_ENABLED = true;
+export const AUTH_BYPASS_ENABLED =
+  process.env.NEXT_PUBLIC_AUTH_BYPASS === "true";
 
 const initialWallet = {
   public_key: "0xA1B2C3D4E5F6789012345678ABCDEF012345ABCD",

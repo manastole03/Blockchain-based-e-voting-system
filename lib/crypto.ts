@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const CHAIN_SECRET = "BLOCKCHAIN_SIGNING_KEY_EVOTE_2026";
+const CHAIN_SECRET = process.env.CHAIN_SECRET ?? "BLOCKCHAIN_SIGNING_KEY_EVOTE_2026";
 
 /**
  * Generates a unique blockchain-style transaction key using SHA-256

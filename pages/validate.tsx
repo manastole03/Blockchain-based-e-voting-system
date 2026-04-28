@@ -77,7 +77,7 @@ const Validate = () => {
 
             <div className="border-t border-border/50 pt-4">
               <p className="text-xs text-muted text-center">
-                Don't have a key?{" "}
+                Don&apos;t have a key?{" "}
                 <Link href="/dashboard" className="text-primary hover:text-accent transition-colors">
                   Go cast your vote first →
                 </Link>

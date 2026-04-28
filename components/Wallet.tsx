@@ -27,7 +27,7 @@ const Wallet: React.FC<{}> = () => {
     }
   }, [auth?.token, setWallet]);
 
-  useEffect(() => { getWallet(); }, []);
+  useEffect(() => { getWallet(); }, [getWallet]);
 
   const hasTokens = wallet?.tokens > 0;
   const shortKey = wallet?.public_key
