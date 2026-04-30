@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.fabric-samples
 /.pnp
 .pnp.js
 

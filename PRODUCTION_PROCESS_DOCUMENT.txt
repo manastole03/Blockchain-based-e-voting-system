@@ -12,7 +12,8 @@ Current Production Shape
 
   2. Voter API backend
      Next.js API routes handle login, voter data, wallet data, candidate lookup,
-     vote casting, live results, vote verification, and vote ledger inspection.
+     vote casting, Hyperledger Fabric submission, live results, vote verification,
+     and vote ledger inspection.
 
   3. Blockchain API backend
      Express + TypeScript backend exposes blockchain APIs on port 4000.
@@ -41,10 +42,19 @@ Main Dynamic Database Tables
 
   app_votes
     Stores each cast vote, transaction key, signature, commitment, transaction hash,
-    and linked vote block hash.
+    linked vote block hash, and optional Hyperledger Fabric transaction metadata.
 
   app_vote_blocks
     Stores the append-only vote blockchain ledger.
+
+Hyperledger Fabric Integration
+  The project includes real Fabric chaincode in fabric/chaincode/evoting and a
+  Fabric Gateway client in lib/fabricGateway.ts. When FABRIC_ENABLED=true, the vote
+  API submits the vote to EVotingContract.CastVote before it updates the PostgreSQL
+  read model. The app stores the returned Fabric transaction id on app_votes.
+
+  PostgreSQL remains the read model for fast UI queries, while Fabric is the
+  permissioned ledger commit path for votes.
 
 Blockchain Concepts Used
   Transaction key
@@ -77,6 +87,8 @@ Blockchain Concepts Used
   Chain validation
     /api/blockchain-ledger recalculates block hashes, Merkle roots, previous-hash links,
     and proof-of-work difficulty. It returns valid true only when the chain is intact.
+    If Fabric is enabled, validation also checks that Fabric vote records exist and match
+    the stored transaction hash.
 
 Tech Used And Why
   Next.js
@@ -118,6 +130,10 @@ Tech Used And Why
   Docker and Docker Compose
     Used to run PostgreSQL and the backend consistently across machines.
 
+  Hyperledger Fabric
+    Used as the permissioned blockchain network for vote chaincode. The local
+    fabric/network.sh helper uses the official Fabric test-network for development.
+
   Vitest and Supertest
     Used for backend unit and integration tests.
 
@@ -138,6 +154,19 @@ Production Environment Variables
     Proof-of-work difficulty for app vote blocks. Use 2 for demo; increase only if
     the server can handle the extra mining work.
 
+  FABRIC_ENABLED
+    Set true to submit votes to Hyperledger Fabric before updating PostgreSQL.
+
+  FABRIC_CHANNEL_NAME, FABRIC_CHAINCODE_NAME, FABRIC_CONTRACT_NAME
+    Fabric target channel and chaincode contract. Defaults are mychannel, evoting,
+    and EVotingContract.
+
+  FABRIC_MSP_ID, FABRIC_PEER_ENDPOINT, FABRIC_PEER_HOST_ALIAS
+    Fabric Gateway identity MSP and peer connection settings.
+
+  FABRIC_TLS_CERT_PATH, FABRIC_CERT_PATH, FABRIC_KEY_DIRECTORY or FABRIC_KEY_PATH
+    Local file paths for the peer TLS certificate and application identity.
+
   CONSENSUS_ALGORITHM
     Express blockchain backend consensus algorithm: pow, pos, or pbft.
 
@@ -156,8 +185,10 @@ AWS Deployment Process
        npm run backend:start
   8. Start the Next.js app:
        npm run start
-  9. Point all users to the same deployed app URL.
-  10. Confirm every deployed app instance uses the same DATABASE_URL.
+  9. For Fabric deployments, deploy fabric/chaincode/evoting to your Fabric channel and
+     set the FABRIC_* environment variables.
+  10. Point all users to the same deployed app URL.
+  11. Confirm every deployed app instance uses the same DATABASE_URL and Fabric network.
 
 Important Production Rules
   1. Do not use in-memory voting state in production.
@@ -168,6 +199,7 @@ Important Production Rules
   6. Rotate JWT_SECRET and CHAIN_SECRET if leaked.
   7. For real elections, replace demo plaintext passwords with bcrypt hashes.
   8. For real elections, replace HMAC demo signatures with voter wallet/private-key signatures.
+  9. For production Fabric, do not use the local Fabric test-network as your operational network.
 
 Simple Dry Run
   1. Start the project.
@@ -186,6 +218,7 @@ Simple Dry Run
   4. Vote for Riya Verma.
 
   5. The app creates:
+       Fabric chaincode vote record when FABRIC_ENABLED=true
        app_votes row
        app_wallets token decrement
        app_voter_elections complete status
@@ -206,6 +239,7 @@ Simple Dry Run
        Merkle root
        nonce
        difficulty
+       Fabric transaction id when FABRIC_ENABLED=true
 
   9. Open Live Results.
        http://localhost:3000/candidates

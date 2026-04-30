@@ -18,6 +18,8 @@ Persistence note:
   and vote verification records in PostgreSQL app_* tables.
   Keep NEXT_PUBLIC_AUTH_BYPASS=false in production so all browsers use the real API and database.
   Each persisted vote is also written into an append-only app_vote_blocks proof-of-work ledger.
+  If FABRIC_ENABLED=true, each vote is submitted to Hyperledger Fabric chaincode first and
+  the Fabric transaction id is saved on the app_votes row.
 
 Prerequisites:
   1. Docker Desktop or Docker Engine with Docker Compose.
@@ -51,6 +53,7 @@ Option A - Run with Docker, verified on this machine
        -p 3000:3000 \
        -e DATABASE_URL="postgres://evoting:evoting_password@postgres:5432/evoting" \
        -e NEXT_PUBLIC_AUTH_BYPASS=false \
+       -e FABRIC_ENABLED=false \
        -e APP_VOTE_POW_DIFFICULTY=2 \
        -e JWT_SECRET="change-this-long-random-jwt-secret-before-production" \
        -e CHAIN_SECRET="change-this-long-random-vote-signing-secret-before-production" \
@@ -95,6 +98,9 @@ Option A - Run with Docker, verified on this machine
 
       Validate the vote blockchain ledger:
         curl "http://localhost:3000/api/blockchain-ledger?limit=5"
+
+      Check Fabric client configuration:
+        curl http://localhost:3000/api/fabric-status
 
 11. Run the automated tests:
       docker exec evoting-next-frontend npm test
@@ -150,6 +156,33 @@ Option B - Run locally with Node.js/npm
 11. Run tests:
       npm test
 
+Option C - Enable Hyperledger Fabric locally
+
+1. Install Docker and Node.js 20 or newer.
+
+2. From the project folder, start the Fabric test network and deploy the e-voting chaincode:
+     npm run fabric:bootstrap
+     npm run fabric:up
+     npm run fabric:deploy
+
+3. Print the Fabric Gateway environment:
+     npm run fabric:env
+
+4. Copy that output into .env and set:
+     FABRIC_ENABLED=true
+
+5. Start the frontend as usual:
+     npm run dev
+
+6. Verify Fabric config:
+     curl http://localhost:3000/api/fabric-status
+
+7. Cast a vote. The API submits the vote to EVotingContract.CastVote before updating
+   PostgreSQL. The response and verification page include the Fabric transaction id.
+
+8. Stop the Fabric test network:
+     npm run fabric:down
+
 AWS deployment notes:
   1. Use one shared PostgreSQL database, for example Amazon RDS PostgreSQL.
   2. Set DATABASE_URL on the deployed Next.js app and backend API to that same database.
@@ -159,6 +192,8 @@ AWS deployment notes:
      must point to the same DATABASE_URL.
   6. Set JWT_SECRET and CHAIN_SECRET to long random production secrets.
   7. Set APP_VOTE_POW_DIFFICULTY to a value your server can handle; 2 is fast for demo use.
+  8. For Fabric deployments, set FABRIC_ENABLED=true and provide MSP identity, private key,
+     TLS certificate, channel, and chaincode environment variables for your Fabric network.
 
 Useful commands:
   Check running containers:

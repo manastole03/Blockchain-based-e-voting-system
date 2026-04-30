@@ -26,6 +26,8 @@ const Candidates: React.FC<Props> = ({ candidates, electionName }) => {
   const [successModal, setSuccessModal] = useState(false);
   const [transactionKey, setTransactionKey] = useState("");
   const [signature, setSignature] = useState("");
+  const [ledgerBackend, setLedgerBackend] = useState("");
+  const [fabricTxId, setFabricTxId] = useState("");
 
   const handleVoteConfirm = (candidate: Candidate) => {
     if (wallet?.tokens <= 0) {
@@ -50,6 +52,8 @@ const Candidates: React.FC<Props> = ({ candidates, electionName }) => {
       setCurrentCandidate(null);
       setTransactionKey(data?.TransactionKey);
       setSignature(data?.SignatureGenerated);
+      setLedgerBackend(data?.ledgerBackend ?? "");
+      setFabricTxId(data?.fabricTxId ?? "");
       setModalOpen(false);
       setSuccessModal(true);
 
@@ -181,6 +185,28 @@ const Candidates: React.FC<Props> = ({ candidates, electionName }) => {
             </div>
             <p className="font-mono text-xs text-muted break-all">{signature}</p>
           </div>
+
+          {fabricTxId && (
+            <div className="bg-background/60 rounded-xl p-4 border border-border/50">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-muted uppercase tracking-wider font-semibold">Hyperledger Fabric TX ID</p>
+                <button
+                  onClick={() => copyToClipboard(fabricTxId)}
+                  className="text-xs text-primary hover:text-accent transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="font-mono text-xs text-muted break-all">{fabricTxId}</p>
+            </div>
+          )}
+
+          {ledgerBackend && (
+            <div className="bg-background/60 rounded-xl p-3 border border-border/50">
+              <p className="text-xs text-muted uppercase tracking-wider font-semibold mb-1">Ledger Backend</p>
+              <p className="text-sm text-white font-mono">{ledgerBackend}</p>
+            </div>
+          )}
 
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 text-xs text-primary flex items-start gap-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>

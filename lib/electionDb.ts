@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Pool, type PoolClient } from "pg";
 import { db, type Candidate, type Election, type Vote, type Voter, type Wallet } from "./db";
+import { isFabricEnabled, readVoteFromFabric, submitVoteToFabric } from "./fabricGateway";
 
 type VoterElectionRow = {
   voter_id: string;
@@ -28,6 +29,12 @@ type VoteDetailsRow = {
   transaction_key: string;
   transaction_hash: string | null;
   block_hash: string | null;
+  ledger_backend: "local" | "fabric";
+  fabric_tx_id: string | null;
+  fabric_channel: string | null;
+  fabric_chaincode: string | null;
+  fabric_contract: string | null;
+  fabric_committed_at: string | null;
   block_height: number | null;
   previous_hash: string | null;
   merkle_root: string | null;
@@ -48,6 +55,10 @@ type CastVoteResult = {
   transactionHash: string;
   blockHash: string;
   blockHeight: number;
+  ledgerBackend: "local" | "fabric";
+  fabricTxId: string | null;
+  fabricChannel: string | null;
+  fabricChaincode: string | null;
 };
 
 class ApiError extends Error {
@@ -442,15 +453,38 @@ export async function ensureElectionSchema(): Promise<void> {
             transaction_key VARCHAR(120) NOT NULL UNIQUE,
             transaction_hash CHAR(64) UNIQUE,
             block_hash CHAR(64),
+            ledger_backend VARCHAR(20) NOT NULL DEFAULT 'local',
+            fabric_tx_id TEXT UNIQUE,
+            fabric_channel VARCHAR(120),
+            fabric_chaincode VARCHAR(120),
+            fabric_contract VARCHAR(120),
+            fabric_payload JSONB,
+            fabric_committed_at TIMESTAMPTZ,
             signature TEXT NOT NULL,
             commitment CHAR(64) NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT app_votes_ledger_backend_check CHECK (ledger_backend IN ('local', 'fabric')),
             UNIQUE (voter_id, election_id)
           );
 
           ALTER TABLE app_votes
             ADD COLUMN IF NOT EXISTS transaction_hash CHAR(64) UNIQUE,
-            ADD COLUMN IF NOT EXISTS block_hash CHAR(64);
+            ADD COLUMN IF NOT EXISTS block_hash CHAR(64),
+            ADD COLUMN IF NOT EXISTS ledger_backend VARCHAR(20) NOT NULL DEFAULT 'local',
+            ADD COLUMN IF NOT EXISTS fabric_tx_id TEXT UNIQUE,
+            ADD COLUMN IF NOT EXISTS fabric_channel VARCHAR(120),
+            ADD COLUMN IF NOT EXISTS fabric_chaincode VARCHAR(120),
+            ADD COLUMN IF NOT EXISTS fabric_contract VARCHAR(120),
+            ADD COLUMN IF NOT EXISTS fabric_payload JSONB,
+            ADD COLUMN IF NOT EXISTS fabric_committed_at TIMESTAMPTZ;
+
+          DO $$
+          BEGIN
+            ALTER TABLE app_votes
+              ADD CONSTRAINT app_votes_ledger_backend_check CHECK (ledger_backend IN ('local', 'fabric'));
+          EXCEPTION
+            WHEN duplicate_object THEN NULL;
+          END $$;
 
           CREATE INDEX IF NOT EXISTS idx_app_votes_candidate
             ON app_votes (candidate_id);
@@ -689,6 +723,17 @@ export const electionDb = {
           commitment: params.commitment,
           timestamp: createdAt,
         });
+        const fabricSubmission = await submitVoteToFabric({
+          voterId: params.voterId,
+          electionId: params.electionId,
+          candidateId: params.candidateId,
+          transactionKey: params.transactionKey,
+          transactionHash,
+          signature: params.signature,
+          commitment: params.commitment,
+          timestamp: createdAt,
+        });
+        const ledgerBackend = fabricSubmission ? "fabric" : "local";
 
         await client.query("SELECT pg_advisory_xact_lock(hashtext('app_vote_blocks'))");
 
@@ -711,8 +756,10 @@ export const electionDb = {
 
         await client.query(
           `INSERT INTO app_votes
-            (id, voter_id, election_id, candidate_id, transaction_key, transaction_hash, signature, commitment, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            (id, voter_id, election_id, candidate_id, transaction_key, transaction_hash,
+             signature, commitment, ledger_backend, fabric_tx_id, fabric_channel, fabric_chaincode,
+             fabric_contract, fabric_payload, fabric_committed_at, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
           [
             voteId,
             params.voterId,
@@ -722,6 +769,13 @@ export const electionDb = {
             transactionHash,
             params.signature,
             params.commitment,
+            ledgerBackend,
+            fabricSubmission?.record.fabricTxId ?? null,
+            fabricSubmission?.channelName ?? null,
+            fabricSubmission?.chaincodeName ?? null,
+            fabricSubmission?.contractName ?? null,
+            fabricSubmission ? JSON.stringify(fabricSubmission.record) : null,
+            fabricSubmission?.record.fabricTimestamp ?? null,
             createdAt,
           ]
         );
@@ -741,6 +795,10 @@ export const electionDb = {
             block.difficulty,
             {
               type: "VOTE_BLOCK",
+              ledgerBackend,
+              fabricTxId: fabricSubmission?.record.fabricTxId ?? null,
+              fabricChannel: fabricSubmission?.channelName ?? null,
+              fabricChaincode: fabricSubmission?.chaincodeName ?? null,
               voteId,
               electionId: params.electionId,
               candidateId: params.candidateId,
@@ -788,6 +846,10 @@ export const electionDb = {
           transactionHash,
           blockHash: block.hash,
           blockHeight: height,
+          ledgerBackend,
+          fabricTxId: fabricSubmission?.record.fabricTxId ?? null,
+          fabricChannel: fabricSubmission?.channelName ?? null,
+          fabricChaincode: fabricSubmission?.chaincodeName ?? null,
         };
       } catch (error: any) {
         await client.query("ROLLBACK");
@@ -834,12 +896,24 @@ export const electionDb = {
     difficulty?: number | null;
     consensus?: string | null;
     validatorNode?: string | null;
+    ledgerBackend?: "local" | "fabric";
+    fabricTxId?: string | null;
+    fabricChannel?: string | null;
+    fabricChaincode?: string | null;
+    fabricContract?: string | null;
+    fabricCommittedAt?: string | null;
   }) | null> {
     const result = await query(
       `SELECT
          v.transaction_key,
          v.transaction_hash,
          v.block_hash,
+         v.ledger_backend,
+         v.fabric_tx_id,
+         v.fabric_channel,
+         v.fabric_chaincode,
+         v.fabric_contract,
+         v.fabric_committed_at,
          v.signature,
          v.commitment,
          v.created_at,
@@ -887,6 +961,14 @@ export const electionDb = {
       difficulty: row.difficulty === null ? null : Number(row.difficulty),
       consensus: row.consensus,
       validatorNode: row.validator_node,
+      ledgerBackend: row.ledger_backend,
+      fabricTxId: row.fabric_tx_id,
+      fabricChannel: row.fabric_channel,
+      fabricChaincode: row.fabric_chaincode,
+      fabricContract: row.fabric_contract,
+      fabricCommittedAt: row.fabric_committed_at
+        ? new Date(row.fabric_committed_at).toISOString()
+        : null,
     };
   },
 
@@ -905,6 +987,10 @@ export const electionDb = {
          b.payload,
          b.created_at,
          v.transaction_key,
+         v.ledger_backend,
+         v.fabric_tx_id,
+         v.fabric_channel,
+         v.fabric_chaincode,
          e.name AS election_name,
          c.name AS candidate_name
        FROM app_vote_blocks b
@@ -930,15 +1016,31 @@ export const electionDb = {
       payload: row.payload,
       electionName: row.election_name,
       candidateName: row.candidate_name,
+      ledgerBackend: row.ledger_backend,
+      fabricTxId: row.fabric_tx_id,
+      fabricChannel: row.fabric_channel,
+      fabricChaincode: row.fabric_chaincode,
       createdAt: new Date(row.created_at).toISOString(),
     }));
   },
 
   async validateVoteLedger() {
     const result = await query(
-      `SELECT hash, height, previous_hash, transaction_hash, merkle_root, nonce, difficulty, consensus, created_at
-       FROM app_vote_blocks
-       ORDER BY height ASC`
+      `SELECT
+         b.hash,
+         b.height,
+         b.previous_hash,
+         b.transaction_hash,
+         b.merkle_root,
+         b.nonce,
+         b.difficulty,
+         b.consensus,
+         b.created_at,
+         v.transaction_key,
+         v.fabric_tx_id
+       FROM app_vote_blocks b
+       JOIN app_votes v ON v.id = b.vote_id
+       ORDER BY b.height ASC`
     );
 
     const errors: string[] = [];
@@ -979,6 +1081,26 @@ export const electionDb = {
 
       if (difficulty > 0 && !row.hash.startsWith("0".repeat(difficulty))) {
         errors.push(`Block ${height} does not satisfy proof-of-work difficulty`);
+      }
+
+      if (isFabricEnabled() && row.fabric_tx_id) {
+        try {
+          const fabricVote = await readVoteFromFabric(row.transaction_key);
+          if (!fabricVote) {
+            errors.push(`Block ${height} Fabric vote ${row.transaction_key} was not found`);
+          } else {
+            if (fabricVote.fabricTxId !== row.fabric_tx_id) {
+              errors.push(`Block ${height} Fabric transaction id does not match`);
+            }
+            if (fabricVote.transactionHash !== row.transaction_hash) {
+              errors.push(`Block ${height} Fabric transaction hash does not match`);
+            }
+          }
+        } catch (error: any) {
+          errors.push(
+            `Block ${height} Fabric validation failed: ${error?.message ?? "unknown error"}`
+          );
+        }
       }
 
       previousHash = row.hash;

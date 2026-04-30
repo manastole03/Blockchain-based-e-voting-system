@@ -15,6 +15,10 @@ services:
       POW_DIFFICULTY: 3
       MINING_REWARD: 10
       MAX_TRANSACTIONS_PER_BLOCK: 100
+      FABRIC_ENABLED: "false"
+      FABRIC_CHANNEL_NAME: mychannel
+      FABRIC_CHAINCODE_NAME: evoting
+      FABRIC_CONTRACT_NAME: EVotingContract
       RATE_LIMIT_WINDOW_MS: 60000
       RATE_LIMIT_MAX: 120
     ports:
@@ -44,4 +48,3 @@ services:
 
 volumes:
   postgres_data:
-

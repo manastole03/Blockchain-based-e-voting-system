@@ -184,7 +184,14 @@ export const castDevVote = (candidateId: string) => {
     ts: new Date().toISOString(),
   });
 
-  return { TransactionKey, SignatureGenerated };
+  return {
+    TransactionKey,
+    SignatureGenerated,
+    ledgerBackend: "local",
+    fabricTxId: null,
+    fabricChannel: null,
+    fabricChaincode: null,
+  };
 };
 
 export const verifyDevVote = (TransactionKey: string) => {
@@ -207,6 +214,10 @@ export const verifyDevVote = (TransactionKey: string) => {
       candidate: candidateName,
       timestamp: vote.ts,
       commitment: `sha256:${vote.key}`,
+      ledgerBackend: "local",
+      fabricTxId: null,
+      fabricChannel: null,
+      fabricChaincode: null,
     },
   };
 };

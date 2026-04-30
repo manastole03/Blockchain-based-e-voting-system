@@ -1,12 +1,14 @@
 # Blockchain-Based E-Voting Backend
 
-Production-shaped backend for a blockchain-based voting application. The existing project is a Next.js + TypeScript app, so the backend keeps the same Node/TypeScript stack and adds a dedicated Express API with PostgreSQL persistence, modular blockchain services, pluggable consensus, Docker support, and tests.
+Production-shaped backend for a blockchain-based voting application. The existing project is a Next.js + TypeScript app, so the backend keeps the same Node/TypeScript stack and adds a dedicated Express API with PostgreSQL persistence, modular blockchain services, Hyperledger Fabric vote submission, pluggable consensus, Docker support, and tests.
 
 ## Tech Stack
 
 - Node.js + TypeScript
 - Express REST API
 - PostgreSQL database
+- Hyperledger Fabric Gateway client API
+- Hyperledger Fabric JavaScript chaincode for cast votes
 - Native Node `crypto` ECDSA signing on `secp256k1`
 - Zod request validation
 - Pino structured logging
@@ -32,6 +34,7 @@ src/
   utils/                     hashing, signing, Merkle root helpers
 database/schema.sql          database schema and indexes
 tests/                       unit and integration tests
+fabric/                      Fabric chaincode and local test-network helper
 ```
 
 ## Quick Start
@@ -68,6 +71,35 @@ docker compose up --build
 
 The backend container applies `database/schema.sql` before starting the API. PostgreSQL data is persisted in the `postgres_data` Docker volume.
 
+## Hyperledger Fabric
+
+The voter-facing API can submit each cast vote to Hyperledger Fabric before updating the PostgreSQL read model. Fabric is disabled by default for local fallback mode.
+
+Fabric Gateway requires Node.js 20.9 or newer.
+
+Start and deploy a local Fabric test network:
+
+```bash
+npm run fabric:bootstrap
+npm run fabric:up
+npm run fabric:deploy
+npm run fabric:env
+```
+
+Copy the `fabric:env` output into `.env`, set `FABRIC_ENABLED=true`, then run the Next.js app. Cast votes are submitted to the `EVotingContract.CastVote` chaincode function and the resulting Fabric transaction id is stored with the vote.
+
+The Fabric pieces are:
+
+- `fabric/chaincode/evoting`: JavaScript smart contract using `fabric-contract-api`
+- `lib/fabricGateway.ts`: Next.js API Gateway client using `@hyperledger/fabric-gateway`
+- `pages/api/fabric-status.ts`: quick runtime configuration check
+
+Stop the local network with:
+
+```bash
+npm run fabric:down
+```
+
 ## Configuration
 
 Important environment variables:
@@ -79,6 +111,10 @@ CONSENSUS_ALGORITHM=pow
 POW_DIFFICULTY=3
 MINING_REWARD=10
 MAX_TRANSACTIONS_PER_BLOCK=100
+FABRIC_ENABLED=false
+FABRIC_CHANNEL_NAME=mychannel
+FABRIC_CHAINCODE_NAME=evoting
+FABRIC_CONTRACT_NAME=EVotingContract
 ```
 
 Switch consensus by setting `CONSENSUS_ALGORITHM` to `pow`, `pos`, or `pbft`.
@@ -231,6 +267,7 @@ curl -X POST http://localhost:4000/api/validators \
 - Transactions are signed ECDSA payloads. The transaction hash is computed from a canonical JSON payload.
 - Wallet addresses are derived from `sha256(publicKey)` and stored with public keys only.
 - Vote transactions require `payload.electionId` and `payload.candidateId`.
+- When `FABRIC_ENABLED=true`, voter app votes are also endorsed and committed through Hyperledger Fabric chaincode.
 - Pending transactions are stored in the mempool as database rows with `PENDING` status.
 - Mining validates pending transactions, rejects invalid ones, adds an optional reward transaction, computes the Merkle root, and persists the confirmed block.
 - Chain validation recalculates block hashes, Merkle roots, transaction hashes, signatures, previous-hash links, and consensus rules.

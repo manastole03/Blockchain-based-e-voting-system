@@ -20,6 +20,10 @@ type ApiResponse =
       transactionHash: string;
       blockHash: string;
       blockHeight: number;
+      ledgerBackend: "local" | "fabric";
+      fabricTxId: string | null;
+      fabricChannel: string | null;
+      fabricChaincode: string | null;
     };
 
 type DecodedToken = {
@@ -131,6 +135,10 @@ export default async function handler(
       transactionHash: vote.transactionHash,
       blockHash: vote.blockHash,
       blockHeight: vote.blockHeight,
+      ledgerBackend: vote.ledgerBackend,
+      fabricTxId: vote.fabricTxId,
+      fabricChannel: vote.fabricChannel,
+      fabricChaincode: vote.fabricChaincode,
     });
   } catch (error: any) {
     if (error?.statusCode) {

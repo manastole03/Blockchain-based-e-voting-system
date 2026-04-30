@@ -12,9 +12,16 @@
     "test:watch": "vitest",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "fabric:bootstrap": "./fabric/network.sh bootstrap",
+    "fabric:up": "./fabric/network.sh up",
+    "fabric:deploy": "./fabric/network.sh deploy",
+    "fabric:env": "./fabric/network.sh env",
+    "fabric:down": "./fabric/network.sh down"
   },
   "dependencies": {
+    "@grpc/grpc-js": "^1.14.3",
+    "@hyperledger/fabric-gateway": "^1.10.1",
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",

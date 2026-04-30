@@ -36,6 +36,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       difficulty: vote.difficulty,
       consensus: vote.consensus,
       validatorNode: vote.validatorNode,
+      ledgerBackend: vote.ledgerBackend,
+      fabricTxId: vote.fabricTxId,
+      fabricChannel: vote.fabricChannel,
+      fabricChaincode: vote.fabricChaincode,
+      fabricContract: vote.fabricContract,
+      fabricCommittedAt: vote.fabricCommittedAt,
     },
   });
 }

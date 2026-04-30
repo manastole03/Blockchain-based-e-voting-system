@@ -172,15 +172,38 @@ CREATE TABLE IF NOT EXISTS app_votes (
   transaction_key VARCHAR(120) NOT NULL UNIQUE,
   transaction_hash CHAR(64) UNIQUE,
   block_hash CHAR(64),
+  ledger_backend VARCHAR(20) NOT NULL DEFAULT 'local',
+  fabric_tx_id TEXT UNIQUE,
+  fabric_channel VARCHAR(120),
+  fabric_chaincode VARCHAR(120),
+  fabric_contract VARCHAR(120),
+  fabric_payload JSONB,
+  fabric_committed_at TIMESTAMPTZ,
   signature TEXT NOT NULL,
   commitment CHAR(64) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT app_votes_ledger_backend_check CHECK (ledger_backend IN ('local', 'fabric')),
   UNIQUE (voter_id, election_id)
 );
 
 ALTER TABLE app_votes
   ADD COLUMN IF NOT EXISTS transaction_hash CHAR(64) UNIQUE,
-  ADD COLUMN IF NOT EXISTS block_hash CHAR(64);
+  ADD COLUMN IF NOT EXISTS block_hash CHAR(64),
+  ADD COLUMN IF NOT EXISTS ledger_backend VARCHAR(20) NOT NULL DEFAULT 'local',
+  ADD COLUMN IF NOT EXISTS fabric_tx_id TEXT UNIQUE,
+  ADD COLUMN IF NOT EXISTS fabric_channel VARCHAR(120),
+  ADD COLUMN IF NOT EXISTS fabric_chaincode VARCHAR(120),
+  ADD COLUMN IF NOT EXISTS fabric_contract VARCHAR(120),
+  ADD COLUMN IF NOT EXISTS fabric_payload JSONB,
+  ADD COLUMN IF NOT EXISTS fabric_committed_at TIMESTAMPTZ;
+
+DO $$
+BEGIN
+  ALTER TABLE app_votes
+    ADD CONSTRAINT app_votes_ledger_backend_check CHECK (ledger_backend IN ('local', 'fabric'));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_app_votes_candidate
   ON app_votes (candidate_id);
