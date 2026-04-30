@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FABRIC_SAMPLES_DIR="${FABRIC_SAMPLES_DIR:-$ROOT_DIR/.fabric-samples}"
+FABRIC_SAMPLES_DIR="${FABRIC_SAMPLES_DIR:-$PWD/fabric-samples}"
 TEST_NETWORK_DIR="$FABRIC_SAMPLES_DIR/test-network"
 CHANNEL_NAME="${FABRIC_CHANNEL_NAME:-mychannel}"
 CHAINCODE_NAME="${FABRIC_CHAINCODE_NAME:-evoting}"
