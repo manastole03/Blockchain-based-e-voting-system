@@ -4,6 +4,11 @@ A secure, transparent, and auditable e-voting platform combining a **production-
 
 This project extends earlier research work on blockchain-based voting by moving from a high-level conceptual framework to a more structured, smart-contract-driven and REST-API-driven architecture with stronger election control, vote integrity, auditability, and deployment readiness.
 
+### Note
+Please refer to [Steps](./RUN_PROJECT_STEPS.txt) or sections 9-13 for setting up and running the project. <br/>
+To maintain commit sanity, development commits have been squashed and/or applied via patches, Hence complete development history through participation of members does not accurately reflect in Git Commit History.
+
+
 ---
 
 ## Table of Contents
@@ -19,14 +24,15 @@ This project extends earlier research work on blockchain-based voting by moving 
 9. [Quick Start — Custom Blockchain Backend](#9-quick-start--custom-blockchain-backend)
 10. [Docker](#10-docker)
 11. [Configuration](#11-configuration)
-12. [API Reference](#12-api-reference)
-13. [Blockchain Implementation](#13-blockchain-implementation)
-14. [Consensus Algorithms](#14-consensus-algorithms)
-15. [Database](#15-database)
-16. [Tests](#16-tests)
-17. [Hyperledger Fabric Chaincode](#17-hyperledger-fabric-chaincode)
-18. [Deployment](#18-deployment)
-19. [Project Screenshots](#19-project-screenshots)
+12. [Hyperledger Fabric Chaincode](#17-hyperledger-fabric-chaincode)
+13. [Frontend](#13-frontend-application)
+14. [API Reference](#12-api-reference)
+15. [Blockchain Implementation](#13-blockchain-implementation)
+16. [Consensus Algorithms](#14-consensus-algorithms)
+17. [Database](#15-database)
+18. [Tests](#16-tests)
+19. [Deployment](#18-deployment)
+20. [Project Screenshots](#19-project-screenshots)
 
 ---
 
@@ -623,7 +629,7 @@ curl -X POST http://localhost:4000/api/validators \
 
 ---
 
-## 14. Consensus Algorithms
+## 16. Consensus Algorithms
 
 ### Proof of Work (PoW)
 Mines a block hash with leading zeroes based on `POW_DIFFICULTY`.
@@ -636,7 +642,7 @@ Models prepare/commit quorum persistence for a local validator set. It requires 
 
 ---
 
-## 16. Database
+## 17. Database
 
 `database/schema.sql` creates the following tables:
 
@@ -651,7 +657,7 @@ Indexes are included for block lookup, pending transaction reads, wallet balance
 
 ---
 
-## 17. Tests
+## 18. Tests
 
 ```bash
 npm test
@@ -669,9 +675,9 @@ Coverage includes:
 
 ---
 
-## 18. Deployment
+## 19. Deployment
 
-### 18.1 Local Draft Usage
+### 19.1 Local Draft Usage
 
 This repository includes a **starter draft** of the Hyperledger chaincode alongside the production-shaped Express backend. You can use the chaincode layer in three steps:
 
@@ -679,7 +685,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 2. Customize the ledger schema and validation rules for your institution or election model
 3. Deploy the chaincode to a Hyperledger Fabric test network
 
-### 18.2 Typical Deployment Flow
+### 19.2 Typical Deployment Flow
 
 1. Start a Hyperledger Fabric network
 2. Package and install the JavaScript chaincode
@@ -687,7 +693,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 4. Invoke chaincode methods using the Fabric SDK, CLI, or middleware APIs
 5. Build a web app in Next.js / React and connect it through a Node.js backend
 
-### 18.3 Example Future Deployment Architecture
+### 19.3 Example Future Deployment Architecture
 
 | Layer | Technology |
 |---|---|
@@ -699,7 +705,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 
 ---
 
-## 19. Project Screenshots
+## 20. Project Screenshots
 
 ![Screenshot 1](https://github.com/user-attachments/assets/d0297b2f-80b7-4bd5-9f89-a13afb848ee3)
 
