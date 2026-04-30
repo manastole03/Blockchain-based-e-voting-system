@@ -368,7 +368,106 @@ Switch consensus by setting `CONSENSUS_ALGORITHM` to `pow`, `pos`, or `pbft`.
 
 ---
 
-## 12. API Reference
+## 12. Hyperledger Fabric Chaincode
+
+### 12.1 Setup
+
+#### Required Software
+- Node.js 18+
+- npm 9+
+- Docker
+- Docker Compose (or Docker Desktop)
+- Hyperledger Fabric test network or a Fabric deployment environment
+
+#### Optional but Recommended
+- Git
+- VS Code
+- Postman / Bruno for API testing
+- A Fabric CA setup for certificate-based identity issuance
+
+#### Chaincode Setup
+
+```bash
+cd fabric/chaincode/evoting
+npm install
+```
+This installs the npm packages for interfacing with the fabric client
+
+#### Hyperledger Fabric Setup
+
+Sourced from [docs](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)
+Based on MacOS and Linux (Might Vary for Windows. Please check documentation)
+
+1) Download the Install script
+```bash
+cd ../.. #Go to Fabric Folder
+curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+```
+
+2) Run the script to download binaries
+```bash
+chmod +x install-fabric.sh
+./install-fabric.sh d s b
+```
+3) Add the binaries to path 
+```bash
+export PATH=$PWD/fabric-samples/bin/:$PATH
+ export FABRIC_CFG_PATH=$PWD/fabric-samples/bin
+```
+
+4) Verify by running the version command
+```bash
+peer version
+```
+5) Run the custom deployment scripts
+```bash
+chmod +x ./network.sh
+./network.sh up
+./network.sh deploy
+```
+
+### 12.2 Smart Contract Overview
+
+The smart contract defines a Fabric chaincode component called `ElectionContract`.
+
+#### Main Interfaces / Signatures
+
+| Function | Description |
+|---|---|
+| `InitLedger(ctx)` | Bootstrap the ledger |
+| `CreateElection(ctx, electionId, title, startTime, endTime, adminId)` | Create a new election |
+| `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)` | Register an eligible voter |
+| `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)` | Register a candidate |
+| `OpenVoting(ctx, electionId)` | Transition election to voting open |
+| `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)` | Cast a ballot (one per voter) |
+| `CloseVoting(ctx, electionId)` | Close the voting phase |
+| `FinalizeTally(ctx, electionId)` | Compute and publish final results |
+| `GetElection(ctx, electionId)` | Query election details |
+| `GetCandidate(ctx, electionId, candidateId)` | Query candidate details |
+| `GetVoter(ctx, electionId, voterId)` | Query voter record |
+| `GetResults(ctx, electionId)` | Query final results |
+| `GetElectionAuditTrail(ctx, electionId)` | Query full audit trail |
+
+---
+
+## 13. Frontend Application
+
+Once all te previous components are setup and running, run the frontend using the following command from root directory
+```bash
+npm run dev
+```
+
+The frontend can be accessed at URL: http://localhost:3000
+
+Use the following credentials for login:
+Email: voter@demo.com
+Password: password123
+
+In production, the credentials can be dynamic and mapped to SSO providers for easier identification. 
+
+---
+
+## 14. API Reference
 
 All responses use:
 
@@ -512,7 +611,7 @@ curl -X POST http://localhost:4000/api/validators \
 
 ---
 
-## 13. Blockchain Implementation
+## 15. Blockchain Implementation
 
 - Blocks store height, previous hash, timestamp, Merkle root, nonce, difficulty, consensus type, validator, metadata, and transactions.
 - Transactions are signed ECDSA payloads. The transaction hash is computed from a canonical JSON payload.
@@ -537,7 +636,7 @@ Models prepare/commit quorum persistence for a local validator set. It requires 
 
 ---
 
-## 15. Database
+## 16. Database
 
 `database/schema.sql` creates the following tables:
 
@@ -552,7 +651,7 @@ Indexes are included for block lookup, pending transaction reads, wallet balance
 
 ---
 
-## 16. Tests
+## 17. Tests
 
 ```bash
 npm test
@@ -567,88 +666,6 @@ Coverage includes:
 - PoS validation
 - PBFT quorum behavior
 - Integration flow through the REST API
-
----
-
-## 17. Hyperledger Fabric Chaincode
-
-### 17.1 Setup
-
-#### Required Software
-- Node.js 18+
-- npm 9+
-- Docker
-- Docker Compose (or Docker Desktop)
-- Hyperledger Fabric test network or a Fabric deployment environment
-
-#### Optional but Recommended
-- Git
-- VS Code
-- Postman / Bruno for API testing
-- A Fabric CA setup for certificate-based identity issuance
-
-#### Chaincode Setup
-
-```bash
-cd fabric/chaincode/evoting
-npm install
-```
-This installs the npm packages for interfacing with the fabric client
-
-#### Hyperledger Fabric Setup
-
-Sourced from [docs](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)
-Based on MacOS and Linux (Might Vary for Windows. Please check documentation)
-
-1) Download the Install script
-```bash
-cd ../.. #Go to Fabric Folder
-curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
-```
-
-2) Run the script to download binaries
-```bash
-chmod +x install-fabric.sh
-./install-fabric.sh d s b
-```
-3) Add the binaries to path 
-```bash
-export PATH=$PWD/fabric-samples/bin/:$PATH
- export FABRIC_CFG_PATH=$PWD/fabric-samples/bin
-```
-
-4) Verify by running the version command
-```bash
-peer version
-```
-5) Run the custom deployment scripts
-```bash
-chmod +x ./network.sh
-./network.sh up
-./network.sh deploy
-```
-
-### 17.2 Smart Contract Overview
-
-The smart contract defines a Fabric chaincode component called `ElectionContract`.
-
-#### Main Interfaces / Signatures
-
-| Function | Description |
-|---|---|
-| `InitLedger(ctx)` | Bootstrap the ledger |
-| `CreateElection(ctx, electionId, title, startTime, endTime, adminId)` | Create a new election |
-| `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)` | Register an eligible voter |
-| `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)` | Register a candidate |
-| `OpenVoting(ctx, electionId)` | Transition election to voting open |
-| `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)` | Cast a ballot (one per voter) |
-| `CloseVoting(ctx, electionId)` | Close the voting phase |
-| `FinalizeTally(ctx, electionId)` | Compute and publish final results |
-| `GetElection(ctx, electionId)` | Query election details |
-| `GetCandidate(ctx, electionId, candidateId)` | Query candidate details |
-| `GetVoter(ctx, electionId, voterId)` | Query voter record |
-| `GetResults(ctx, electionId)` | Query final results |
-| `GetElectionAuditTrail(ctx, electionId)` | Query full audit trail |
 
 ---
 
