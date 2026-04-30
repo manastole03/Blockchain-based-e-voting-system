@@ -590,8 +590,42 @@ Coverage includes:
 #### Chaincode Setup
 
 ```bash
-cd chaincode-javascript
+cd fabric/chaincode/evoting
 npm install
+```
+This installs the npm packages for interfacing with the fabric client
+
+#### Hyperledger Fabric Setup
+
+Sourced from [docs](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)
+Based on MacOS and Linux (Might Vary for Windows. Please check documentation)
+
+1) Download the Install script
+```bash
+cd ../.. #Go to Fabric Folder
+curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+```
+
+2) Run the script to download binaries
+```bash
+chmod +x install-fabric.sh
+./install-fabric.sh d s b
+```
+3) Add the binaries to path 
+```bash
+export PATH=$PWD/fabric-samples/bin/:$PATH
+ export FABRIC_CFG_PATH=$PWD/fabric-samples/bin
+```
+
+4) Verify by running the version command
+```bash
+peer version
+```
+5) Run the custom deployment scripts
+```bash
+chmod +x ./network.sh
+./network.sh up
+./network.sh deploy
 ```
 
 ### 17.2 Smart Contract Overview
