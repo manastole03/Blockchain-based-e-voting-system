@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "../../../lib/db";
 import { signToken } from "../../../lib/auth";
+import { electionDb } from "../../../lib/electionDb";
 
 type LoginRequestBody = {
   email: string;
@@ -57,9 +57,7 @@ export default async function handler(
     /**
      * Step 4: Check if a voter exists with matching credentials.
      */
-    const voter = db.voters.find(
-      (record) => record.email === email && record.password === password
-    );
+    const voter = await electionDb.findVoterByCredentials(email, password);
 
     /**
      * Step 5: If voter is not found, return unauthorized response.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { useRouter } from "next/router";
 import { authState } from "../atoms";
@@ -26,7 +26,7 @@ const Dashboard = () => {
     return "Good evening";
   };
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     try {
       if (!auth.token && !AUTH_BYPASS_ENABLED) return;
       setLoading(true);
@@ -41,7 +41,7 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [auth.token]);
 
   useEffect(() => {
     if (!auth?.isLoggedIn && !AUTH_BYPASS_ENABLED) {
@@ -49,7 +49,7 @@ const Dashboard = () => {
       return;
     }
     getData();
-  }, [auth?.isLoggedIn, auth?.token]);
+  }, [auth?.isLoggedIn, auth?.token, getData, router]);
 
   const totalActive = elections.filter((e) => e.status === "incomplete").length;
   const totalDone = elections.filter((e) => e.status === "complete").length;

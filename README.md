@@ -1,110 +1,158 @@
-# Hyperledger-Based Blockchain E-Voting System
+# Blockchain-Based E-Voting System
 
-A secure, transparent, and auditable e-voting platform built on **Hyperledger Fabric Technology**.  
-This project extends our earlier research work on blockchain-based voting by moving from a high-level conceptual framework to a more structured smart-contract-driven architecture with stronger election control, vote integrity, auditability, and deployment readiness.
+A secure, transparent, and auditable e-voting platform combining a **production-shaped custom blockchain backend** (Node.js + TypeScript + PostgreSQL) with a **Hyperledger Fabric smart-contract architecture** for permissioned election management.
 
----
-
-## 1. Project Description
-
-Traditional voting systems and many electronic voting implementations face major challenges such as:
-
-- risk of tampering
-- lack of transparency
-- weak auditability
-- centralized control
-- operational complexity during election setup and counting
-- trust deficit among voters
-
-Our earlier research proposed using blockchain to improve election transparency, reliability, and tamper resistance. The paper specifically highlights the use of **Hyperledger Fabric**, where votes are recorded as blockchain transactions, voter and candidate identities are handled through smart contracts, and the architecture is designed around organizations, nodes, and private channels. It also describes a web application architecture using **Next.js**, **Node.js**, containerized deployment, and Fabric-based transaction execution. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
-
-This repository advances that work by introducing a more implementation-oriented design with:
-
-- explicit **election lifecycle management**
-- stricter **one-voter-one-vote enforcement**
-- **tokenized ballot issuance**
-- structured **chaincode interfaces**
-- improved **audit events and result finalization**
-- better separation of responsibilities across components
-- deployment-ready project structure
+This project extends earlier research work on blockchain-based voting by moving from a high-level conceptual framework to a more structured, smart-contract-driven and REST-API-driven architecture with stronger election control, vote integrity, auditability, and deployment readiness.
 
 ---
 
-## 2. Research Foundation
+## Table of Contents
 
-This repository is based on our research paper and abstract:
+1. [Research Foundation](#1-research-foundation)
+2. [Project Description](#2-project-description)
+3. [What Is Improved in This Advanced Version](#3-what-is-improved-in-this-advanced-version)
+4. [Objectives](#4-objectives)
+5. [Key Features](#5-key-features)
+6. [Tech Stack](#6-tech-stack)
+7. [Project Structure](#7-project-structure)
+8. [High-Level Architecture](#8-high-level-architecture)
+9. [Quick Start — Custom Blockchain Backend](#9-quick-start--custom-blockchain-backend)
+10. [Docker](#10-docker)
+11. [Configuration](#11-configuration)
+12. [API Reference](#12-api-reference)
+13. [Blockchain Implementation](#13-blockchain-implementation)
+14. [Consensus Algorithms](#14-consensus-algorithms)
+15. [Database](#15-database)
+16. [Tests](#16-tests)
+17. [Hyperledger Fabric Chaincode](#17-hyperledger-fabric-chaincode)
+18. [Deployment](#18-deployment)
+19. [Project Screenshots](#19-project-screenshots)
+
+---
+
+## 1. Research Foundation
+
+This repository is based on the following research work:
 
 - **Paper:** *Hyperledger-Based Blockchain Technology for Data Security in E-Voting Systems*
 - **Abstract / Initial Project Title:** *A Framework to Make Voting System Using Blockchain Technology*
 
 The research motivates blockchain-based voting because blockchain offers:
 
-- decentralization
-- immutability
-- transparency
-- auditability
-- secure digital transactions
+- Decentralization
+- Immutability
+- Transparency
+- Auditability
+- Secure digital transactions
 
-The paper also proposes using **Hyperledger Fabric** because of its permissioned architecture, access control support, organizations, nodes, channels, and chaincode-based execution model. It further maps the system to a web architecture using **Next.js**, **Node.js**, Fabric SDKs, and containerized hosting on cloud platforms. :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
-
----
-
-## 3. What is improved in this advanced version?
-The research paper focuses on security, transparency, and vote transfer using blockchain. This repository improves the design by adding a more structured election lifecycle and a safer voting algorithm:
-
-1. **Explicit election phases**
-   - Registration
-   - Candidate approval
-   - Voting open
-   - Voting closed
-   - Tally finalized
-
-2. **One-person-one-vote enforcement**
-   - Each voter has a verified identity record.
-   - Each voter can cast only one ballot in a given election.
-
-3. **Privacy-aware ballot storage**
-   - Instead of storing plain voting choices directly, the system stores a **ballot commitment hash** on-chain.
-   - This reduces exposure of sensitive voting information while preserving auditability.
-
-4. **Auditable result finalization**
-   - All state transitions and major voting actions are recorded on the ledger.
-   - Final tally can be independently verified against committed voting events.
-
-5. **Cleaner smart contract structure**
-   - Separate functions for election creation, voter registration, candidate registration, vote casting, tallying, and query operations.
----
-## 4. Research basis
-This starter design is grounded in the project abstract and published paper provided by the group. The documents describe:
-- a blockchain voting framework,
-- one-time voting tokens,
-- voter verification through an official database,
-- Hyperledger Fabric organizations/nodes/channels,
-- and a Node.js + Next.js + Docker-based architecture.
+The paper proposes using **Hyperledger Fabric** because of its permissioned architecture, access control support, organizations, nodes, channels, and chaincode-based execution model. It further maps the system to a web architecture using **Next.js**, **Node.js**, Fabric SDKs, and containerized hosting on cloud platforms.
 
 ---
 
-## 5. Objectives
+## 2. Project Description
+
+Traditional voting systems and many electronic voting implementations face major challenges such as:
+
+- Risk of tampering
+- Lack of transparency
+- Weak auditability
+- Centralized control
+- Operational complexity during election setup and counting
+- Trust deficit among voters
+
+The existing project is a **Next.js + TypeScript** app. This backend keeps the same Node/TypeScript stack and adds:
+
+- A dedicated Express REST API with PostgreSQL persistence
+- Modular blockchain services with pluggable consensus
+- Docker support and structured tests
+
+The Hyperledger Fabric layer introduces a smart-contract-driven architecture with:
+
+- Explicit **election lifecycle management**
+- Stricter **one-voter-one-vote enforcement**
+- **Tokenized ballot issuance**
+- Structured **chaincode interfaces**
+- Improved **audit events and result finalization**
+- Better separation of responsibilities across components
+- Deployment-ready project structure
+
+---
+
+## 3. What Is Improved in This Advanced Version
+
+Compared with the original conceptual model, this repository introduces the following improvements:
+
+### 3.1 Explicit Election Phases
+- Registration
+- Candidate Approval
+- Voting Open
+- Voting Closed
+- Tally Finalized
+
+### 3.2 One-Person-One-Vote Enforcement
+- Each voter has a verified identity record.
+- Each voter can cast only one ballot in a given election.
+
+### 3.3 Privacy-Aware Ballot Storage
+- Instead of storing plain voting choices directly, the system stores a **ballot commitment hash** on-chain.
+- This reduces exposure of sensitive voting information while preserving auditability.
+
+### 3.4 Auditable Result Finalization
+- All state transitions and major voting actions are recorded on the ledger.
+- Final tally can be independently verified against committed voting events.
+
+### 3.5 Cleaner Smart Contract Structure
+- Separate functions for election creation, voter registration, candidate registration, vote casting, tallying, and query operations.
+
+### 3.6 Election Lifecycle State Machine
+- Draft
+- Registration Open
+- Voting Open
+- Voting Closed
+- Result Finalized
+
+### 3.7 Explicit Smart Contract Interfaces
+- Cleaner signatures
+- Easier testing
+- Clearer rubric alignment
+
+### 3.8 Vote Integrity Controls
+- One-vote-per-voter restriction
+- Immutable on-chain transaction log
+- Election-specific vote validation
+
+### 3.9 Auditability
+- Event emission for key actions
+- Transparent election closure and result publication
+
+### 3.10 Future Privacy Enhancements
+- Vote commitment hash
+- Optional anonymous credential support
+- Optional zero-knowledge or commit-reveal based design in future versions
+
+---
+
+## 4. Objectives
 
 The main objective of this project is to build a blockchain-based voting system that is:
 
-- **secure** – votes cannot be altered after submission
-- **transparent** – the process is verifiable and auditable
-- **private** – voter identity and vote secrecy are preserved
-- **traceable** – authorized audit events can be inspected
-- **scalable** – suitable for institution-level or department-level elections
-- **extensible** – can be improved into a production-grade election platform
+- **Secure** — votes cannot be altered after submission
+- **Transparent** — the process is verifiable and auditable
+- **Private** — voter identity and vote secrecy are preserved
+- **Traceable** — authorized audit events can be inspected
+- **Scalable** — suitable for institution-level or department-level elections
+- **Extensible** — can be improved into a production-grade election platform
 
 ---
 
-## 6. Key Features
+## 5. Key Features
 
-### 6.1 Current/Planned Features
+### 5.1 Current / Planned Features
 
 - Voter registration and eligibility verification
 - Candidate registration
 - Election creation and scheduling
-- Ballot/token issuance to eligible voters
+- Ballot / token issuance to eligible voters
 - One-time vote casting
 - Prevention of double voting
 - Blockchain-backed immutable vote records
@@ -115,38 +163,63 @@ The main objective of this project is to build a blockchain-based voting system 
 - REST API middleware for frontend integration
 - Containerized deployment using Docker
 
-### 6.2 Advanced Improvements 
+### 5.2 Custom Blockchain Backend Features
 
-Compared with the original conceptual model, this repository proposes the following improvements:
-
-1. **Election Lifecycle State Machine**
-   - Draft
-   - Registration Open
-   - Voting Open
-   - Voting Closed
-   - Result Finalized
-
-2. **Explicit Smart Contract Interfaces**
-   - cleaner signatures
-   - easier testing
-   - clearer rubric alignment
-
-3. **Vote Integrity Controls**
-   - one-vote-per-voter restriction
-   - immutable on-chain transaction log
-   - election-specific vote validation
-
-4. **Auditability**
-   - event emission for key actions
-   - transparent election closure and result publication
-
-5. **Future Privacy Enhancements**
-   - vote commitment hash
-   - optional anonymous credential support
-   - optional zero-knowledge or commit-reveal based design in future versions
+- ECDSA-signed transactions on `secp256k1`
+- Pluggable consensus: Proof of Work, Proof of Stake, PBFT
+- Mempool with pending transaction management
+- Merkle root computation per block
+- Chain validation (hashes, signatures, previous-hash links, consensus rules)
+- Wallet address derivation from `sha256(publicKey)`
+- Structured Pino logging, Helmet, CORS, and rate limiting
 
 ---
-## 7. Repository structure
+
+## 6. Tech Stack
+
+### Custom Blockchain Backend
+- Node.js + TypeScript
+- Express REST API
+- PostgreSQL database
+- Native Node `crypto` ECDSA signing on `secp256k1`
+- Zod request validation
+- Pino structured logging
+- Helmet, CORS, and rate limiting
+- Vitest + Supertest
+- Docker + Docker Compose
+
+### Hyperledger Fabric Layer
+- Hyperledger Fabric (permissioned blockchain)
+- JavaScript / Node.js chaincode
+- Fabric SDK (Node.js)
+- Next.js frontend
+- Docker + Docker Compose
+
+---
+
+## 7. Project Structure
+
+### 7.1 Custom Blockchain Backend
+
+```text
+src/
+  app.ts                     Express app composition
+  server.ts                  API server entrypoint
+  config/                    environment, logger, database pool
+  controllers/               HTTP request handlers
+  database/                  migration runner
+  middleware/                validation, rate limit, error handling
+  models/                    blockchain domain types
+  repositories/              Postgres and in-memory data adapters
+  routes/                    REST route definitions and schemas
+  services/                  blockchain, wallet, tx, node, validator logic
+  services/consensus/        PoW, PoS, PBFT consensus adapters
+  utils/                     hashing, signing, Merkle root helpers
+database/schema.sql          database schema and indexes
+tests/                       unit and integration tests
+```
+
+### 7.2 Hyperledger Fabric Layer
 
 ```text
 hyperledger-evoting-advanced-starter/
@@ -164,31 +237,10 @@ hyperledger-evoting-advanced-starter/
         └── election-contract.js
 └── frontend/
 ```
+
 ---
 
-## 8. Dependencies / setup instructions
-
-### 8.1 Required software
-- Node.js 18+
-- npm 9+
-- Docker
-- Docker Compose (or Docker Desktop)
-- Hyperledger Fabric test network or a Fabric deployment environment
-
-### 8.2 Optional but recommended
-- Git
-- VS Code
-- Postman / Bruno for API testing
-- A Fabric CA setup for certificate-based identity issuance
-
-### 8.3 Chaincode setup
-```bash
-cd chaincode-javascript
-npm install
-```
----
-
-## 9. High-Level Architecture
+## 8. High-Level Architecture
 
 ```mermaid
 flowchart TD
@@ -211,11 +263,9 @@ flowchart TD
     SDK --> O4
 ```
 
+### 8.1 Fabric Organization and Election Channel Design
 
-## 9.1 Fabric Organization and Election Channel Design
-
-The following diagram represents a more deployment-oriented interpretation of the architecture proposed in our research paper.  
-The Election Authority manages the election, candidate peers are grouped logically, voter peers belong to different departments/organizations, and voting transactions are executed through permissioned Fabric channels and smart contracts.
+The following diagram represents a deployment-oriented interpretation of the architecture proposed in the research paper. The Election Authority manages the election, candidate peers are grouped logically, voter peers belong to different departments/organizations, and voting transactions are executed through permissioned Fabric channels and smart contracts.
 
 ```mermaid
 flowchart TB
@@ -259,82 +309,363 @@ flowchart TB
     V2 -. Private Election Channel .- Cand1
     V3 -. Private Election Channel .- Cand2
     Admin -. Governance / Control Access .- CA
-
 ```
----
-Project Screenshots
-
-<img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/d0297b2f-80b7-4bd5-9f89-a13afb848ee3" />
-
-
-<img width="1902" height="911" alt="image" src="https://github.com/user-attachments/assets/b71f579c-efbf-4229-88d9-9e1be35923bf" />
-
-
-<img width="1896" height="902" alt="image" src="https://github.com/user-attachments/assets/eeaafc57-7b9c-42be-be79-53b08f4a60bd" />
-
-
-<img width="1900" height="906" alt="image" src="https://github.com/user-attachments/assets/7477b68e-f2b7-43d0-8e1a-c0f00f0b04e9" />
-
-
-<img width="1919" height="906" alt="image" src="https://github.com/user-attachments/assets/b66a0a8a-4256-45ca-9ea7-12c40d1cc622" />
-
-
-<img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/265ebe35-eea9-4df3-8d70-6e2aa7b927e8" />
-
-
-<img width="1899" height="906" alt="image" src="https://github.com/user-attachments/assets/8ce784cc-9e54-43cf-852a-f13d628752c3" />
-
-
-<img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/083b3b74-0c36-461e-b99e-7d6d435b3bbb" />
-
-
-<img width="1902" height="908" alt="image" src="https://github.com/user-attachments/assets/9d98facf-01e5-4b3c-b441-2477ef0359e8" />
-
-
-<img width="1894" height="903" alt="image" src="https://github.com/user-attachments/assets/c06f03de-2703-42c7-a903-b7c0bf1e25af" />
-
 
 ---
 
-## 10. How to use / deploy
+## 9. Quick Start — Custom Blockchain Backend
 
-### 10.1 Local draft usage
-This repository is currently a **starter draft**, not a full production deployment.
-You can use it in three steps:
+Copy environment defaults:
+
+```bash
+cp .env.example .env
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start Postgres, apply the schema, then run the backend:
+
+```bash
+docker compose up -d postgres
+npm run db:migrate
+npm run backend:dev
+```
+
+The API runs at `http://localhost:4000/api`.
+
+---
+
+## 10. Docker
+
+Run the full backend and database with one command:
+
+```bash
+docker compose up --build
+```
+
+The backend container applies `database/schema.sql` before starting the API. PostgreSQL data is persisted in the `postgres_data` Docker volume.
+
+---
+
+## 11. Configuration
+
+Important environment variables:
+
+```text
+PORT=4000
+DATABASE_URL=postgres://evoting:evoting_password@localhost:5432/evoting
+CONSENSUS_ALGORITHM=pow
+POW_DIFFICULTY=3
+MINING_REWARD=10
+MAX_TRANSACTIONS_PER_BLOCK=100
+```
+
+Switch consensus by setting `CONSENSUS_ALGORITHM` to `pow`, `pos`, or `pbft`.
+
+---
+
+## 12. API Reference
+
+All responses use:
+
+```json
+{ "success": true, "data": {} }
+```
+
+Errors use:
+
+```json
+{ "success": false, "error": { "code": "ERROR_CODE", "message": "..." } }
+```
+
+### Health
+
+```bash
+curl http://localhost:4000/api/health
+```
+
+### Create Wallet
+
+```bash
+curl -X POST http://localhost:4000/api/wallets \
+  -H "Content-Type: application/json" \
+  -d '{ "label": "voter-1" }'
+```
+
+The private key is returned only once. Store it client-side; the server persists only the public key and address.
+
+### Get Wallet Balance
+
+```bash
+curl http://localhost:4000/api/wallets/0xabc123.../balance
+```
+
+### Sign Transaction
+
+> This endpoint is provided for development and API testing. In a hardened deployment, perform this signing step in the client or wallet and submit only the public key, signature, and transaction payload to the backend.
+
+```bash
+curl -X POST http://localhost:4000/api/transactions/sign \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "VOTE",
+    "fromAddress": "0xabc123...",
+    "amount": 0,
+    "payload": {
+      "electionId": "student-council",
+      "candidateId": "candidate-1"
+    },
+    "privateKey": "-----BEGIN PRIVATE KEY-----..."
+  }'
+```
+
+### Create Transaction
+
+Use the `signingPayload`, `signature`, and `publicKey` from the signing response:
+
+```bash
+curl -X POST http://localhost:4000/api/transactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "VOTE",
+    "fromAddress": "0xabc123...",
+    "toAddress": null,
+    "amount": 0,
+    "payload": {
+      "electionId": "student-council",
+      "candidateId": "candidate-1"
+    },
+    "nonce": 1710000000000,
+    "timestamp": "2026-04-27T12:00:00.000Z",
+    "signature": "base64-signature",
+    "publicKey": "-----BEGIN PUBLIC KEY-----..."
+  }'
+```
+
+### Validate Transaction
+
+```bash
+curl -X POST http://localhost:4000/api/transactions/validate \
+  -H "Content-Type: application/json" \
+  -d '{ "hash": "64-char-transaction-hash" }'
+```
+
+### Pending Transactions
+
+```bash
+curl http://localhost:4000/api/transactions/pending
+```
+
+### Mine or Create Block
+
+```bash
+curl -X POST http://localhost:4000/api/blocks/mine \
+  -H "Content-Type: application/json" \
+  -d '{ "minerAddress": "0xabc123..." }'
+```
+
+### View Blockchain
+
+```bash
+curl http://localhost:4000/api/blockchain
+```
+
+### View Block by Height or Hash
+
+```bash
+curl http://localhost:4000/api/blocks/1
+curl http://localhost:4000/api/blocks/000abc...
+```
+
+### Validate Blockchain
+
+```bash
+curl http://localhost:4000/api/blockchain/validate
+```
+
+### Register Node
+
+```bash
+curl -X POST http://localhost:4000/api/nodes \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "http://node-2:4000", "metadata": { "region": "us-west" } }'
+```
+
+### Register Validator
+
+Required for Proof of Stake and PBFT:
+
+```bash
+curl -X POST http://localhost:4000/api/validators \
+  -H "Content-Type: application/json" \
+  -d '{
+    "address": "0xabc123...",
+    "publicKey": "-----BEGIN PUBLIC KEY-----...",
+    "stake": 100,
+    "nodeUrl": "http://node-1:4000"
+  }'
+```
+
+---
+
+## 13. Blockchain Implementation
+
+- Blocks store height, previous hash, timestamp, Merkle root, nonce, difficulty, consensus type, validator, metadata, and transactions.
+- Transactions are signed ECDSA payloads. The transaction hash is computed from a canonical JSON payload.
+- Wallet addresses are derived from `sha256(publicKey)` and stored with public keys only.
+- Vote transactions require `payload.electionId` and `payload.candidateId`.
+- Pending transactions are stored in the mempool as database rows with `PENDING` status.
+- Mining validates pending transactions, rejects invalid ones, adds an optional reward transaction, computes the Merkle root, and persists the confirmed block.
+- Chain validation recalculates block hashes, Merkle roots, transaction hashes, signatures, previous-hash links, and consensus rules.
+
+---
+
+## 14. Consensus Algorithms
+
+### Proof of Work (PoW)
+Mines a block hash with leading zeroes based on `POW_DIFFICULTY`.
+
+### Proof of Stake (PoS)
+Selects from active validators weighted by stake and validates the block validator.
+
+### PBFT
+Models prepare/commit quorum persistence for a local validator set. It requires at least four active validators and stores consensus events for auditability. The interface is isolated so a real network transport can replace the local adapter.
+
+---
+
+## 15. Database
+
+`database/schema.sql` creates the following tables:
+
+- `wallets`
+- `transactions`
+- `blocks`
+- `validators`
+- `network_nodes`
+- `consensus_events`
+
+Indexes are included for block lookup, pending transaction reads, wallet balance queries, validator selection, and consensus event lookup.
+
+---
+
+## 16. Tests
+
+```bash
+npm test
+```
+
+Coverage includes:
+
+- Transaction signing and verification
+- Block creation
+- Chain validation
+- PoW mining
+- PoS validation
+- PBFT quorum behavior
+- Integration flow through the REST API
+
+---
+
+## 17. Hyperledger Fabric Chaincode
+
+### 17.1 Setup
+
+#### Required Software
+- Node.js 18+
+- npm 9+
+- Docker
+- Docker Compose (or Docker Desktop)
+- Hyperledger Fabric test network or a Fabric deployment environment
+
+#### Optional but Recommended
+- Git
+- VS Code
+- Postman / Bruno for API testing
+- A Fabric CA setup for certificate-based identity issuance
+
+#### Chaincode Setup
+
+```bash
+cd chaincode-javascript
+npm install
+```
+
+### 17.2 Smart Contract Overview
+
+The smart contract defines a Fabric chaincode component called `ElectionContract`.
+
+#### Main Interfaces / Signatures
+
+| Function | Description |
+|---|---|
+| `InitLedger(ctx)` | Bootstrap the ledger |
+| `CreateElection(ctx, electionId, title, startTime, endTime, adminId)` | Create a new election |
+| `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)` | Register an eligible voter |
+| `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)` | Register a candidate |
+| `OpenVoting(ctx, electionId)` | Transition election to voting open |
+| `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)` | Cast a ballot (one per voter) |
+| `CloseVoting(ctx, electionId)` | Close the voting phase |
+| `FinalizeTally(ctx, electionId)` | Compute and publish final results |
+| `GetElection(ctx, electionId)` | Query election details |
+| `GetCandidate(ctx, electionId, candidateId)` | Query candidate details |
+| `GetVoter(ctx, electionId, voterId)` | Query voter record |
+| `GetResults(ctx, electionId)` | Query final results |
+| `GetElectionAuditTrail(ctx, electionId)` | Query full audit trail |
+
+---
+
+## 18. Deployment
+
+### 18.1 Local Draft Usage
+
+This repository includes a **starter draft** of the Hyperledger chaincode alongside the production-shaped Express backend. You can use the chaincode layer in three steps:
 
 1. Review the smart contract draft in `chaincode-javascript/lib/election-contract.js`
 2. Customize the ledger schema and validation rules for your institution or election model
 3. Deploy the chaincode to a Hyperledger Fabric test network
 
-### 10.2 Typical deployment flow
+### 18.2 Typical Deployment Flow
+
 1. Start a Hyperledger Fabric network
 2. Package and install the JavaScript chaincode
 3. Approve and commit the chaincode definition
 4. Invoke chaincode methods using the Fabric SDK, CLI, or middleware APIs
 5. Build a web app in Next.js / React and connect it through a Node.js backend
 
-### 10.3 Example future deployment architecture
-- **Frontend:** Next.js / React portal for admin, voter, and candidate dashboards
-- **Backend / API:** Node.js / Express / Fabric SDK
-- **Blockchain:** Hyperledger Fabric peers, orderers, CAs
-- **Storage:** Ledger state + optional encrypted off-chain metadata store
-- **Infra:** Dockerized services on AWS / GCP / local server cluster
+### 18.3 Example Future Deployment Architecture
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js / React portal for admin, voter, and candidate dashboards |
+| Backend / API | Node.js / Express / Fabric SDK |
+| Blockchain | Hyperledger Fabric peers, orderers, CAs |
+| Storage | Ledger state + optional encrypted off-chain metadata store |
+| Infrastructure | Dockerized services on AWS / GCP / local server cluster |
+
 ---
-## 11. Draft smart contract overview
 
-The smart contract in this repository defines a Fabric chaincode component called `ElectionContract`.
+## 19. Project Screenshots
 
-### 11.1 Main interfaces / signatures
-- `InitLedger(ctx)`
-- `CreateElection(ctx, electionId, title, startTime, endTime, adminId)`
-- `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)`
-- `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)`
-- `OpenVoting(ctx, electionId)`
-- `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)`
-- `CloseVoting(ctx, electionId)`
-- `FinalizeTally(ctx, electionId)`
-- `GetElection(ctx, electionId)`
-- `GetCandidate(ctx, electionId, candidateId)`
-- `GetVoter(ctx, electionId, voterId)`
-- `GetResults(ctx, electionId)`
-- `GetElectionAuditTrail(ctx, electionId)`
+![Screenshot 1](https://github.com/user-attachments/assets/d0297b2f-80b7-4bd5-9f89-a13afb848ee3)
+
+![Screenshot 2](https://github.com/user-attachments/assets/b71f579c-efbf-4229-88d9-9e1be35923bf)
+
+![Screenshot 3](https://github.com/user-attachments/assets/eeaafc57-7b9c-42be-be79-53b08f4a60bd)
+
+![Screenshot 4](https://github.com/user-attachments/assets/7477b68e-f2b7-43d0-8e1a-c0f00f0b04e9)
+
+![Screenshot 5](https://github.com/user-attachments/assets/b66a0a8a-4256-45ca-9ea7-12c40d1cc622)
+
+![Screenshot 6](https://github.com/user-attachments/assets/265ebe35-eea9-4df3-8d70-6e2aa7b927e8)
+
+![Screenshot 7](https://github.com/user-attachments/assets/8ce784cc-9e54-43cf-852a-f13d628752c3)
+
+![Screenshot 8](https://github.com/user-attachments/assets/083b3b74-0c36-461e-b99e-7d6d435b3bbb)
+
+![Screenshot 9](https://github.com/user-attachments/assets/9d98facf-01e5-4b3c-b441-2477ef0359e8)
+
+![Screenshot 10](https://github.com/user-attachments/assets/c06f03de-2703-42c7-a903-b7c0bf1e25af)

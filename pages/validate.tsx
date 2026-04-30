@@ -77,7 +77,7 @@ const Validate = () => {
 
             <div className="border-t border-border/50 pt-4">
               <p className="text-xs text-muted text-center">
-                Don't have a key?{" "}
+                Don&apos;t have a key?{" "}
                 <Link href="/dashboard" className="text-primary hover:text-accent transition-colors">
                   Go cast your vote first →
                 </Link>
@@ -123,6 +123,10 @@ const Validate = () => {
                   { label: "Candidate", value: result.vote.candidate },
                   { label: "Timestamp", value: new Date(result.vote.timestamp).toLocaleString() },
                   { label: "Transaction Key", value: result.vote.transactionKey },
+                  { label: "Transaction Hash", value: result.vote.transactionHash },
+                  { label: "Ledger Backend", value: result.vote.ledgerBackend },
+                  { label: "Fabric Transaction ID", value: result.vote.fabricTxId },
+                  { label: "Fabric Channel", value: result.vote.fabricChannel },
                 ].map((row) => row.value && (
                   <div key={row.label} className="bg-background/60 rounded-xl p-3 border border-border/40">
                     <p className="text-xs text-muted uppercase tracking-wider font-semibold mb-1">{row.label}</p>

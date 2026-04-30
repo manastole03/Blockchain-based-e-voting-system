@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "../../../lib/db";
 import { verifyToken } from "../../../lib/auth";
+import { electionDb } from "../../../lib/electionDb";
 
 type DecodedToken = {
   id: string;
@@ -65,7 +65,7 @@ export default async function handler(
     /**
      * Step 4: Find the authenticated voter in the database.
      */
-    const voter = db.voters.find((item) => item.id === decoded.id);
+    const voter = await electionDb.findVoterById(decoded.id);
 
     if (!voter) {
       return res.status(404).json({
@@ -76,7 +76,7 @@ export default async function handler(
     /**
      * Step 5: Find the wallet associated with the voter.
      */
-    const wallet = db.wallets.find((item) => item.voterId === voter.id);
+    const wallet = await electionDb.getWalletByVoterId(voter.id);
 
     if (!wallet) {
       return res.status(404).json({

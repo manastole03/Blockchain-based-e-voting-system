@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { GetElectionCandidates } from "../../libs/API";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../atoms";
@@ -45,7 +45,7 @@ const ElectionPage = () => {
   const idParam = Array.isArray(router.query.id) ? router.query.id[0] : router.query.id;
   const meta = electionMeta[idParam || ""] || null;
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     const token = auth?.token;
     try {
       if (!idParam) return;
@@ -57,7 +57,7 @@ const ElectionPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [auth?.locationId, auth?.token, idParam]);
 
   useEffect(() => {
     if (!auth?.isLoggedIn && !AUTH_BYPASS_ENABLED) {
@@ -65,7 +65,7 @@ const ElectionPage = () => {
       return;
     }
     getData();
-  }, [auth?.isLoggedIn, router.isReady, router.query.id]);
+  }, [auth?.isLoggedIn, getData, router]);
 
   return (
     <div className="min-h-screen bg-background">

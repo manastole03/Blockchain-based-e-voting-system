@@ -1,5 +1,5 @@
-// In-memory database simulating a blockchain/Hyperledger Fabric state database
-// In production this would be replaced by Hyperledger Fabric CouchDB state or PostgreSQL
+// Seed data for the local app read model.
+// When FABRIC_ENABLED=true, cast votes are also submitted to Hyperledger Fabric.
 
 export interface Voter {
   id: string;
@@ -77,6 +77,48 @@ const voters: Voter[] = [
     email: "arjun@demo.com",
     password: "password123",
     locationId: "dept-ee",
+  },
+  {
+    id: "voter-004",
+    name: "Neha Rao",
+    email: "neha@demo.com",
+    password: "password123",
+    locationId: "dept-cs",
+  },
+  {
+    id: "voter-005",
+    name: "Aditya Kumar",
+    email: "aditya@demo.com",
+    password: "password123",
+    locationId: "dept-ee",
+  },
+  {
+    id: "voter-006",
+    name: "Meera Nair",
+    email: "meera@demo.com",
+    password: "password123",
+    locationId: "dept-cs",
+  },
+  {
+    id: "voter-007",
+    name: "Rohan Gupta",
+    email: "rohan@demo.com",
+    password: "password123",
+    locationId: "dept-me",
+  },
+  {
+    id: "voter-008",
+    name: "Sana Khan",
+    email: "sana@demo.com",
+    password: "password123",
+    locationId: "dept-ee",
+  },
+  {
+    id: "voter-009",
+    name: "Vikram Joshi",
+    email: "vikram@demo.com",
+    password: "password123",
+    locationId: "dept-cs",
   },
 ];
 
@@ -200,6 +242,36 @@ const wallets: Wallet[] = [
     publicKey: "0xC3D4E5F6789012345678901234CDEF0123456CDE",
     tokens: 2,
   },
+  {
+    voterId: "voter-004",
+    publicKey: "0xD4E5F67890123456789012345DEF01234567DEF0",
+    tokens: 2,
+  },
+  {
+    voterId: "voter-005",
+    publicKey: "0xE5F678901234567890123456EF012345678EF012",
+    tokens: 2,
+  },
+  {
+    voterId: "voter-006",
+    publicKey: "0xF6789012345678901234567F0123456789F01234",
+    tokens: 2,
+  },
+  {
+    voterId: "voter-007",
+    publicKey: "0xA789012345678901234567890123456789012345",
+    tokens: 2,
+  },
+  {
+    voterId: "voter-008",
+    publicKey: "0xB890123456789012345678901234567890123456",
+    tokens: 2,
+  },
+  {
+    voterId: "voter-009",
+    publicKey: "0xC901234567890123456789012345678901234567",
+    tokens: 2,
+  },
 ];
 
 const votes: Vote[] = [];
@@ -210,6 +282,18 @@ const voterElections: VoterElection[] = [
   { voterId: "voter-002", electionId: "election-2026-sc", status: "incomplete" },
   { voterId: "voter-003", electionId: "election-2026-tech", status: "incomplete" },
   { voterId: "voter-003", electionId: "election-2026-dept", status: "incomplete" },
+  { voterId: "voter-004", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-004", electionId: "election-2026-tech", status: "incomplete" },
+  { voterId: "voter-005", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-005", electionId: "election-2026-tech", status: "incomplete" },
+  { voterId: "voter-006", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-006", electionId: "election-2026-tech", status: "incomplete" },
+  { voterId: "voter-007", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-007", electionId: "election-2026-tech", status: "incomplete" },
+  { voterId: "voter-008", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-008", electionId: "election-2026-tech", status: "incomplete" },
+  { voterId: "voter-009", electionId: "election-2026-sc", status: "incomplete" },
+  { voterId: "voter-009", electionId: "election-2026-tech", status: "incomplete" },
 ];
 
 // Singleton db object

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "../../../lib/db";
 import { verifyToken } from "../../../lib/auth";
+import { electionDb } from "../../../lib/electionDb";
+import type { Election } from "../../../lib/db";
 
 type DecodedToken = {
   id: string;
@@ -15,15 +16,10 @@ type VoterProfile = {
 };
 
 type ElectionSummary = {
+  voterId?: string;
   status: string;
-  election: {
-    _id: string;
-    title?: string;
-    description?: string;
-    startDate?: string;
-    endDate?: string;
-    [key: string]: unknown;
-  } | null;
+  electionId: Election | null;
+  election: Election | null;
 };
 
 type SuccessResponse = {
@@ -79,7 +75,7 @@ export default async function handler(
     /**
      * Step 4: Find the authenticated voter.
      */
-    const voter = db.voters.find((item) => item.id === decoded.id);
+    const voter = await electionDb.findVoterById(decoded.id);
 
     if (!voter) {
       return res.status(404).json({
@@ -90,27 +86,7 @@ export default async function handler(
     /**
      * Step 5: Find all voter-election mappings for this voter.
      */
-    const voterElectionMappings = db.voterElections.filter(
-      (item) => item.voterId === voter.id
-    );
-
-    /**
-     * Step 6: Attach election details to each voter-election mapping.
-     */
-    const elections: ElectionSummary[] = voterElectionMappings.map((mapping) => {
-      const election = db.elections.find(
-        (item) => item._id === mapping.electionId
-      );
-
-      return {
-        status: mapping.status,
-        election: election
-          ? {
-              ...election,
-            }
-          : null,
-      };
-    });
+    const elections = await electionDb.getVoterElections(voter.id);
 
     /**
      * Step 7: Return voter profile and linked elections.

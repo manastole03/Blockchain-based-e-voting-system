@@ -1,6 +1,7 @@
 import { AuthState } from "../atoms";
 
-export const AUTH_BYPASS_ENABLED = true;
+export const AUTH_BYPASS_ENABLED =
+  process.env.NEXT_PUBLIC_AUTH_BYPASS === "true";
 
 const initialWallet = {
   public_key: "0xA1B2C3D4E5F6789012345678ABCDEF012345ABCD",
@@ -183,7 +184,14 @@ export const castDevVote = (candidateId: string) => {
     ts: new Date().toISOString(),
   });
 
-  return { TransactionKey, SignatureGenerated };
+  return {
+    TransactionKey,
+    SignatureGenerated,
+    ledgerBackend: "local",
+    fabricTxId: null,
+    fabricChannel: null,
+    fabricChaincode: null,
+  };
 };
 
 export const verifyDevVote = (TransactionKey: string) => {
@@ -206,6 +214,10 @@ export const verifyDevVote = (TransactionKey: string) => {
       candidate: candidateName,
       timestamp: vote.ts,
       commitment: `sha256:${vote.key}`,
+      ledgerBackend: "local",
+      fabricTxId: null,
+      fabricChannel: null,
+      fabricChaincode: null,
     },
   };
 };

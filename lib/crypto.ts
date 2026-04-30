@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const CHAIN_SECRET = "BLOCKCHAIN_SIGNING_KEY_EVOTE_2026";
+const CHAIN_SECRET = process.env.CHAIN_SECRET ?? "BLOCKCHAIN_SIGNING_KEY_EVOTE_2026";
 
 /**
  * Generates a unique blockchain-style transaction key using SHA-256
@@ -19,7 +19,8 @@ export function generateTransactionKey(
 
 /**
  * Generates a cryptographic HMAC-SHA256 signature for the transaction
- * Simulates Hyperledger Fabric endorsement signatures
+ * Used as the app-level vote signature before optional Fabric submission.
+ * Fabric endorsement is handled by the peer when FABRIC_ENABLED=true.
  */
 export function generateSignature(transactionKey: string, voterId: string): string {
   return crypto
