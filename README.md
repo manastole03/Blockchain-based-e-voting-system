@@ -4,6 +4,11 @@ A secure, transparent, and auditable e-voting platform combining a **production-
 
 This project extends earlier research work on blockchain-based voting by moving from a high-level conceptual framework to a more structured, smart-contract-driven and REST-API-driven architecture with stronger election control, vote integrity, auditability, and deployment readiness.
 
+### Note
+Please refer to [Steps](./RUN_PROJECT_STEPS.txt) or sections 9-13 for setting up and running the project. <br/>
+To maintain commit sanity, development commits have been squashed and/or applied via patches, Hence complete development history through participation of members does not accurately reflect in Git Commit History.
+
+
 ---
 
 ## Table of Contents
@@ -19,14 +24,15 @@ This project extends earlier research work on blockchain-based voting by moving 
 9. [Quick Start — Custom Blockchain Backend](#9-quick-start--custom-blockchain-backend)
 10. [Docker](#10-docker)
 11. [Configuration](#11-configuration)
-12. [API Reference](#12-api-reference)
-13. [Blockchain Implementation](#13-blockchain-implementation)
-14. [Consensus Algorithms](#14-consensus-algorithms)
-15. [Database](#15-database)
-16. [Tests](#16-tests)
-17. [Hyperledger Fabric Chaincode](#17-hyperledger-fabric-chaincode)
-18. [Deployment](#18-deployment)
-19. [Project Screenshots](#19-project-screenshots)
+12. [Hyperledger Fabric Chaincode](#17-hyperledger-fabric-chaincode)
+13. [Frontend](#13-frontend-application)
+14. [API Reference](#12-api-reference)
+15. [Blockchain Implementation](#13-blockchain-implementation)
+16. [Consensus Algorithms](#14-consensus-algorithms)
+17. [Database](#15-database)
+18. [Tests](#16-tests)
+19. [Deployment](#18-deployment)
+20. [Project Screenshots](#19-project-screenshots)
 
 ---
 
@@ -368,7 +374,106 @@ Switch consensus by setting `CONSENSUS_ALGORITHM` to `pow`, `pos`, or `pbft`.
 
 ---
 
-## 12. API Reference
+## 12. Hyperledger Fabric Chaincode
+
+### 12.1 Setup
+
+#### Required Software
+- Node.js 18+
+- npm 9+
+- Docker
+- Docker Compose (or Docker Desktop)
+- Hyperledger Fabric test network or a Fabric deployment environment
+
+#### Optional but Recommended
+- Git
+- VS Code
+- Postman / Bruno for API testing
+- A Fabric CA setup for certificate-based identity issuance
+
+#### Chaincode Setup
+
+```bash
+cd fabric/chaincode/evoting
+npm install
+```
+This installs the npm packages for interfacing with the fabric client
+
+#### Hyperledger Fabric Setup
+
+Sourced from [docs](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)
+Based on MacOS and Linux (Might Vary for Windows. Please check documentation)
+
+1) Download the Install script
+```bash
+cd ../.. #Go to Fabric Folder
+curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+```
+
+2) Run the script to download binaries
+```bash
+chmod +x install-fabric.sh
+./install-fabric.sh d s b
+```
+3) Add the binaries to path 
+```bash
+export PATH=$PWD/fabric-samples/bin/:$PATH
+ export FABRIC_CFG_PATH=$PWD/fabric-samples/bin
+```
+
+4) Verify by running the version command
+```bash
+peer version
+```
+5) Run the custom deployment scripts
+```bash
+chmod +x ./network.sh
+./network.sh up
+./network.sh deploy
+```
+
+### 12.2 Smart Contract Overview
+
+The smart contract defines a Fabric chaincode component called `ElectionContract`.
+
+#### Main Interfaces / Signatures
+
+| Function | Description |
+|---|---|
+| `InitLedger(ctx)` | Bootstrap the ledger |
+| `CreateElection(ctx, electionId, title, startTime, endTime, adminId)` | Create a new election |
+| `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)` | Register an eligible voter |
+| `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)` | Register a candidate |
+| `OpenVoting(ctx, electionId)` | Transition election to voting open |
+| `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)` | Cast a ballot (one per voter) |
+| `CloseVoting(ctx, electionId)` | Close the voting phase |
+| `FinalizeTally(ctx, electionId)` | Compute and publish final results |
+| `GetElection(ctx, electionId)` | Query election details |
+| `GetCandidate(ctx, electionId, candidateId)` | Query candidate details |
+| `GetVoter(ctx, electionId, voterId)` | Query voter record |
+| `GetResults(ctx, electionId)` | Query final results |
+| `GetElectionAuditTrail(ctx, electionId)` | Query full audit trail |
+
+---
+
+## 13. Frontend Application
+
+Once all te previous components are setup and running, run the frontend using the following command from root directory
+```bash
+npm run dev
+```
+
+The frontend can be accessed at URL: http://localhost:3000
+
+Use the following credentials for login:
+Email: voter@demo.com
+Password: password123
+
+In production, the credentials can be dynamic and mapped to SSO providers for easier identification. 
+
+---
+
+## 14. API Reference
 
 All responses use:
 
@@ -512,7 +617,7 @@ curl -X POST http://localhost:4000/api/validators \
 
 ---
 
-## 13. Blockchain Implementation
+## 15. Blockchain Implementation
 
 - Blocks store height, previous hash, timestamp, Merkle root, nonce, difficulty, consensus type, validator, metadata, and transactions.
 - Transactions are signed ECDSA payloads. The transaction hash is computed from a canonical JSON payload.
@@ -524,7 +629,7 @@ curl -X POST http://localhost:4000/api/validators \
 
 ---
 
-## 14. Consensus Algorithms
+## 16. Consensus Algorithms
 
 ### Proof of Work (PoW)
 Mines a block hash with leading zeroes based on `POW_DIFFICULTY`.
@@ -537,7 +642,7 @@ Models prepare/commit quorum persistence for a local validator set. It requires 
 
 ---
 
-## 15. Database
+## 17. Database
 
 `database/schema.sql` creates the following tables:
 
@@ -552,7 +657,7 @@ Indexes are included for block lookup, pending transaction reads, wallet balance
 
 ---
 
-## 16. Tests
+## 18. Tests
 
 ```bash
 npm test
@@ -570,57 +675,9 @@ Coverage includes:
 
 ---
 
-## 17. Hyperledger Fabric Chaincode
+## 19. Deployment
 
-### 17.1 Setup
-
-#### Required Software
-- Node.js 18+
-- npm 9+
-- Docker
-- Docker Compose (or Docker Desktop)
-- Hyperledger Fabric test network or a Fabric deployment environment
-
-#### Optional but Recommended
-- Git
-- VS Code
-- Postman / Bruno for API testing
-- A Fabric CA setup for certificate-based identity issuance
-
-#### Chaincode Setup
-
-```bash
-cd chaincode-javascript
-npm install
-```
-
-### 17.2 Smart Contract Overview
-
-The smart contract defines a Fabric chaincode component called `ElectionContract`.
-
-#### Main Interfaces / Signatures
-
-| Function | Description |
-|---|---|
-| `InitLedger(ctx)` | Bootstrap the ledger |
-| `CreateElection(ctx, electionId, title, startTime, endTime, adminId)` | Create a new election |
-| `RegisterVoter(ctx, electionId, voterId, voterNameHash, department, eligibilityHash)` | Register an eligible voter |
-| `RegisterCandidate(ctx, electionId, candidateId, candidateName, partyName)` | Register a candidate |
-| `OpenVoting(ctx, electionId)` | Transition election to voting open |
-| `CastVote(ctx, electionId, voterId, candidateId, ballotCommitment)` | Cast a ballot (one per voter) |
-| `CloseVoting(ctx, electionId)` | Close the voting phase |
-| `FinalizeTally(ctx, electionId)` | Compute and publish final results |
-| `GetElection(ctx, electionId)` | Query election details |
-| `GetCandidate(ctx, electionId, candidateId)` | Query candidate details |
-| `GetVoter(ctx, electionId, voterId)` | Query voter record |
-| `GetResults(ctx, electionId)` | Query final results |
-| `GetElectionAuditTrail(ctx, electionId)` | Query full audit trail |
-
----
-
-## 18. Deployment
-
-### 18.1 Local Draft Usage
+### 19.1 Local Draft Usage
 
 This repository includes a **starter draft** of the Hyperledger chaincode alongside the production-shaped Express backend. You can use the chaincode layer in three steps:
 
@@ -628,7 +685,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 2. Customize the ledger schema and validation rules for your institution or election model
 3. Deploy the chaincode to a Hyperledger Fabric test network
 
-### 18.2 Typical Deployment Flow
+### 19.2 Typical Deployment Flow
 
 1. Start a Hyperledger Fabric network
 2. Package and install the JavaScript chaincode
@@ -636,7 +693,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 4. Invoke chaincode methods using the Fabric SDK, CLI, or middleware APIs
 5. Build a web app in Next.js / React and connect it through a Node.js backend
 
-### 18.3 Example Future Deployment Architecture
+### 19.3 Example Future Deployment Architecture
 
 | Layer | Technology |
 |---|---|
@@ -648,7 +705,7 @@ This repository includes a **starter draft** of the Hyperledger chaincode alongs
 
 ---
 
-## 19. Project Screenshots
+## 20. Project Screenshots
 
 ![Screenshot 1](https://github.com/user-attachments/assets/d0297b2f-80b7-4bd5-9f89-a13afb848ee3)
 
